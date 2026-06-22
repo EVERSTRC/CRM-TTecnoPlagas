@@ -178,7 +178,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbylvEVJuu7FNEewW4SI219-Ea33t6SC5WLOzs7vIZXcZzgCSp8BsrtcyFumPc9bP8/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycby4vrwVqX_-eBnsSyT054xt1-zAyZXvmDFX3P3zlsO1vgZr_Mn7qgcwY4iZ_jiLPpv6/exec";
         let datosTemporales = []; 
 
         document.getElementById('fechaRegistro').valueAsDate = new Date();
@@ -261,10 +261,12 @@
                 
                 data.reverse().forEach((item) => {
                     let fechaMostrada = item.fechaRegistro || '';
-                    if(fechaMostrada && fechaMostrada.includes('T')) {
+                    if(fechaMostrada && typeof fechaMostrada === 'string' && fechaMostrada.includes('T')) {
                         fechaMostrada = new Date(item.fechaRegistro).toLocaleDateString('es-ES');
+                    } else if (fechaMostrada) {
+                        fechaMostrada = String(fechaMostrada).split('T')[0];
                     }
-                    let gpsHtml = item.gps ? `<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.gps)}" target="_blank" class="text-blue-500 underline text-xs">📍 Ver Mapa</a>` : '';
+                    let gpsHtml = item.gps ? `<br><a href="http://googleusercontent.com/maps.google.com/?q=${encodeURIComponent(item.gps)}" target="_blank" class="text-blue-500 underline text-xs">📍 Ver Mapa</a>` : '';
 
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-blue-50 transition border-b border-gray-100";
@@ -304,7 +306,14 @@
             document.getElementById('edit-gps').value = cliente.gps || '';
             
             if(cliente.fechaRegistro) {
-                document.getElementById('edit-fechaRegistro').value = cliente.fechaRegistro.split('T')[0];
+                if(cliente.fechaRegistro.includes('T')) {
+                    document.getElementById('edit-fechaRegistro').value = cliente.fechaRegistro.split('T')[0];
+                } else if(cliente.fechaRegistro.includes('/')) {
+                    const parts = cliente.fechaRegistro.split('/');
+                    if(parts[2] && parts[2].length === 4) {
+                        document.getElementById('edit-fechaRegistro').value = parts[2] + "-" + parts[1].padStart(2,'0') + "-" + parts[0].padStart(2,'0');
+                    }
+                }
             }
             document.getElementById('edit-frecuencia').value = cliente.frecuencia || '';
 
@@ -343,7 +352,7 @@
             })
             .catch(err => {
                 console.error(err);
-                alert("❌ Error de conexión al intentar actualizar. Asegúrate de haber publicado la nueva versión en Apps Script.");
+                alert("❌ Error de conexión al intentar actualizar.");
             });
         }
     </script>
