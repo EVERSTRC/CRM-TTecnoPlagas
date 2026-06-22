@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Control de Fumigaciones</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans min-h-screen flex flex-col">
+
+    <header class="bg-blue-700 text-white shadow-md p-4">
+        <div class="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <h1 class="text-xl font-bold tracking-wide">🕷️ Gestión de Fumigaciones y Clientes</h1>
+            <nav class="flex space-x-2">
+                <button id="btn-registro" class="px-4 py-2 rounded bg-blue-900 font-semibold transition" onclick="cambiarPestana('registro')">Nuevo Registro</button>
+                <button id="btn-consulta" class="px-4 py-2 rounded hover:bg-blue-600 font-semibold transition" onclick="cambiarPestana('consulta')">Consultar Datos</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto p-4 max-w-6xl mt-6">
+        
+        <div id="vista-registro" class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">Registrar Servicio / Cliente</h2>
+            <form id="form-registro" onsubmit="guardarDatos(event)">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Consecutivo *</label>
+                        <input type="text" id="consecutivo" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Nombre Completo *</label>
+                        <input type="text" id="nombre" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Cédula *</label>
+                        <input type="text" id="cedula" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Sucursal</label>
+                        <input type="text" id="sucursal" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Teléfono</label>
+                        <input type="tel" id="telefono" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Email</label>
+                        <input type="email" id="email" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Fecha Registro *</label>
+                        <input type="date" id="fechaRegistro" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Frecuencia de Fumigación</label>
+                        <select id="frecuencia" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                            <option value="">Seleccione una opción...</option>
+                            <option value="Semanal">Semanal</option>
+                            <option value="Quincenal">Quincenal</option>
+                            <option value="Mensual">Mensual</option>
+                            <option value="Bimensual">Bimensual</option>
+                            <option value="Trimestral">Trimestral</option>
+                            <option value="Semestral">Semestral</option>
+                            <option value="Anual">Anual</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Coordenadas GPS</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="gps" placeholder="Latitud, Longitud" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            <button type="button" onclick="obtenerGPS()" class="bg-blue-100 text-blue-700 px-3 rounded-lg hover:bg-blue-200 transition text-xl" title="Obtener mi ubicación">📍</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-semibold mb-1">Dirección Exacta</label>
+                    <textarea id="direccion" rows="2" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Provincia, Cantón, Distrito, y señas..."></textarea>
+                </div>
+
+                <button type="submit" class="w-full bg-blue-700 text-white p-3 rounded-lg font-bold hover:bg-blue-800 transition shadow-lg text-lg">
+                    💾 Guardar Registro
+                </button>
+            </form>
+            <div id="status-registro" class="mt-4 hidden text-center font-semibold p-3 rounded-lg"></div>
+        </div>
+
+        <div id="vista-consulta" class="bg-white p-6 rounded-xl shadow-md border border-gray-200 hidden">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">Consultar Base de Datos</h2>
+            <div class="flex flex-col sm:flex-row mb-6 gap-2">
+                <input type="text" id="busqueda" placeholder="Buscar por Nombre, Cédula o Sucursal..." class="flex-grow p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                <button onclick="buscarDatos()" class="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-emerald-700 transition shadow">
+                    🔍 Buscar
+                </button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full table-auto border-collapse text-left min-w-[1000px]">
+                    <thead>
+                        <tr class="bg-gray-100 text-gray-700 text-xs uppercase font-bold border-b border-gray-200">
+                            <th class="p-2">Consec.</th>
+                            <th class="p-2">Nombre Completo</th>
+                            <th class="p-2">Cédula</th>
+                            <th class="p-2">Sucursal</th>
+                            <th class="p-2">Teléfono</th>
+                            <th class="p-2">Dirección / GPS</th>
+                            <th class="p-2">Frec. Fumigación</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-resultados" class="text-gray-600 text-sm divide-y divide-gray-100">
+                        <tr><td colspan="7" class="p-4 text-center text-gray-400">Haz clic en "Buscar" para cargar.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // URL Vinculada directamente con tu ID de Google Apps Script
+        const API_URL = "https://script.google.com/macros/s/AKfycbyeALTYXl0NFunhlXoLyzkpOSjphebsqETSmQwPJAADa4i_xncKPCN5Zqeq7cEt5teF/exec";
+
+        // Establecer la fecha de hoy por defecto al cargar la página
+        document.getElementById('fechaRegistro').valueAsDate = new Date();
+
+        function cambiarPestana(pestana) {
+            if(pestana === 'registro') {
+                document.getElementById('vista-registro').classList.remove('hidden');
+                document.getElementById('vista-consulta').classList.add('hidden');
+                document.getElementById('btn-registro').classList.add('bg-blue-900');
+                document.getElementById('btn-consulta').classList.remove('bg-blue-900');
+            } else {
+                document.getElementById('vista-registro').classList.add('hidden');
+                document.getElementById('vista-consulta').classList.remove('hidden');
+                document.getElementById('btn-registro').classList.remove('bg-blue-900');
+                document.getElementById('btn-consulta').classList.add('bg-blue-900');
+                buscarDatos(); 
+            }
+        }
+
+        // Función para obtener GPS automáticamente
+        function obtenerGPS() {
+            const inputGps = document.getElementById('gps');
+            inputGps.value = "Obteniendo...";
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        inputGps.value = position.coords.latitude + ", " + position.coords.longitude;
+                    },
+                    (error) => {
+                        alert("No se pudo obtener la ubicación. Verifica los permisos de tu navegador.");
+                        inputGps.value = "";
+                    }
+                );
+            } else {
+                alert("Geolocalización no soportada en este navegador.");
+            }
+        }
+
+        function guardarDatos(event) {
+            event.preventDefault();
+            const status = document.getElementById('status-registro');
+            status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-blue-100 text-blue-800 block";
+            status.innerText = "⏳ Guardando registro en la hoja de cálculo...";
+
+            let fechaSeleccionada = document.getElementById('fechaRegistro').value;
+
+            const payload = {
+                consecutivo: document.getElementById('consecutivo').value,
+                nombre: document.getElementById('nombre').value,
+                cedula: document.getElementById('cedula').value,
+                sucursal: document.getElementById('sucursal').value,
+                telefono: document.getElementById('telefono').value,
+                email: document.getElementById('email').value,
+                direccion: document.getElementById('direccion').value,
+                gps: document.getElementById('gps').value,
+                fechaRegistro: fechaSeleccionada,
+                frecuencia: document.getElementById('frecuencia').value
+            };
+
+            fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-green-100 text-green-800 block";
+                    status.innerText = "✅ ¡Registro guardado con éxito!";
+                    document.getElementById('form-registro').reset();
+                    document.getElementById('fechaRegistro').valueAsDate = new Date();
+                } else {
+                    throw new Error(data.error);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-red-100 text-red-800 block";
+                status.innerText = "❌ Error al intentar guardar. Revisa el Apps Script.";
+            });
+        }
+
+        function buscarDatos() {
+            const query = document.getElementById('busqueda').value;
+            const tbody = document.getElementById('tabla-resultados');
+            tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-blue-500 font-bold">⏳ Descargando base de datos...</td></tr>';
+
+            fetch(API_URL + "?q=" + encodeURIComponent(query))
+            .then(res => res.json())
+            .then(data => {
+                tbody.innerHTML = "";
+                if(data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-gray-500">No se encontraron registros.</td></tr>';
+                    return;
+                }
+                
+                data.reverse().forEach(item => {
+                    let fechaMostrada = item.fechaRegistro;
+                    if(fechaMostrada && fechaMostrada.includes('T')) {
+                        fechaMostrada = new Date(item.fechaRegistro).toLocaleDateString('es-ES');
+                    }
+
+                    let gpsHtml = item.gps ? '<br><a href="https://maps.google.com/?q=' + item.gps + '" target="_blank" class="text-blue-500 underline text-xs">📍 Ver en Mapa</a>' : '';
+
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-blue-50 transition border-b border-gray-100";
+                    tr.innerHTML = `
+                        <td class="p-2 font-mono text-xs text-gray-500">\${item.consecutivo || ''}</td>
+                        <td class="p-2 font-bold text-gray-800">
+                            \${item.nombre || ''}<br>
+                            <span class="text-xs font-normal text-gray-500">Reg: \${fechaMostrada}</span>
+                        </td>
+                        <td class="p-2">\${item.cedula || ''}</td>
+                        <td class="p-2"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">\${item.sucursal || '-'}</span></td>
+                        <td class="p-2 text-sm">\${item.telefono || ''}<br><span class="text-xs text-gray-400">\${item.email || ''}</span></td>
+                        <td class="p-2 text-xs max-w-[200px] truncate" title="\${item.direccion || ''}">
+                            \${item.direccion || ''}
+                            \${gpsHtml}
+                        </td>
+                        <td class="p-2">
+                            <span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs font-bold">\${item.frecuencia || 'No def.'}</span>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            })
+            .catch(err => {
+                console.error(err);
+                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-red-500 font-semibold">❌ Error de conexión.</td></tr>';
+            });
+        }
+    </script>
+</body>
+</html>
