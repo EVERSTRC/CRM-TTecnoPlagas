@@ -178,7 +178,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbx_oN29Gr7iQw2azaJ0y5UrIy6yEAGUD743my-9v5OQYsWkuK1M1CoQFTdQhXTPHgyl/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbzsys_aZCZUiI5HuQZCUDGbbUQ31RpwOHWhH_nn6RzIORikufio4QwIwKsgdPs86764/exec";
         let datosTemporales = []; 
 
         document.getElementById('fechaRegistro').valueAsDate = new Date();
@@ -258,31 +258,34 @@
                     return;
                 }
                 
-                data.reverse().forEach((item, index) => {
+                data.reverse().forEach((item) => {
                     let fechaMostrada = item.fechaRegistro || '';
                     if(fechaMostrada && fechaMostrada.includes('T')) {
                         fechaMostrada = new Date(item.fechaRegistro).toLocaleDateString('es-ES');
                     }
-                    let gpsHtml = item.gps ? '<br><a href="https://maps.google.com/?q=' + item.gps + '" target="_blank" class="text-blue-500 underline text-xs">📍 Ver Mapa</a>' : '';
+                    let gpsHtml = item.gps ? `<br><a href="https://maps.google.com/?q=${encodeURIComponent(item.gps)}" target="_blank" class="text-blue-500 underline text-xs">📍 Ver Mapa</a>` : '';
 
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-blue-50 transition border-b border-gray-100";
                     
-                    tr.innerHTML = 
-                        '<td class="p-2 font-mono text-xs text-gray-500">' + (item.consecutivo || '') + '</td>' +
-                        '<td class="p-2 font-bold text-gray-800">' + (item.nombre || '') + '<br><span class="text-xs font-normal text-gray-500">Reg: ' + fechaMostrada + '</span></td>' +
-                        '<td class="p-2">' + (item.cedula || '') + '</td>' +
-                        '<td class="p-2"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">' + (item.sucursal || '-') + '</span></td>' +
-                        '<td class="p-2 text-sm">' + (item.telefono || '') + '<br><span class="text-xs text-gray-400">' + (item.email || '') + '</span></td>' +
-                        '<td class="p-2 text-xs max-w-[200px] truncate" title="' + (item.direccion || '') + '">' + (item.direccion || '') + gpsHtml + '</td>' +
-                        '<td class="p-2"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs font-bold">' + (item.frecuencia || 'No def.') + '</span></td>' +
-                        '<td class="p-2 text-center"><button onclick="abrirModalEditar(' + item.consecutivo + ')" class="bg-blue-600 text-white px-3 py-1.5 rounded-md font-semibold text-xs hover:bg-blue-700 transition shadow">✏️ Editar</button></td>';
+                    tr.innerHTML = `
+                        <td class="p-2 font-mono text-xs text-gray-500">${item.consecutivo || ''}</td>
+                        <td class="p-2 font-bold text-gray-800">${item.nombre || ''}<br><span class="text-xs font-normal text-gray-500">Reg: ${fechaMostrada}</span></td>
+                        <td class="p-2">${item.cedula || ''}</td>
+                        <td class="p-2"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">${item.sucursal || '-'}</span></td>
+                        <td class="p-2 text-sm">${item.telefono || ''}<br><span class="text-xs text-gray-400">${item.email || ''}</span></td>
+                        <td class="p-2 text-xs max-w-[200px] truncate" title="${item.direccion || ''}">${item.direccion || ''}${gpsHtml}</td>
+                        <td class="p-2"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs font-bold">${item.frecuencia || 'No def.'}</span></td>
+                        <td class="p-2 text-center">
+                            <button onclick="abrirModalEditar(${item.consecutivo})" class="bg-blue-600 text-white px-3 py-1.5 rounded-md font-semibold text-xs hover:bg-blue-700 transition shadow">✏️ Editar</button>
+                        </td>
+                    `;
                     
                     tbody.appendChild(tr);
                 });
             })
             .catch(err => {
-                tbody.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-red-500 font-semibold">❌ Error de conexión.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-red-500 font-semibold">❌ Error de conexión o permisos en Google Script.</td></tr>';
             });
         }
 
