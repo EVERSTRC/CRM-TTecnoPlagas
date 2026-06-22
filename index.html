@@ -178,8 +178,7 @@
     </div>
 
     <script>
-        // ATENCIÓN: Asegúrate de que esta URL corresponda fielmente a tu última implementación pública
-        const API_URL = "https://script.google.com/macros/s/AKfycbzsys_aZCZUiI5HuQZCUDGbbUQ31RpwOHWhH_nn6RzIORikufio4QwIwKsgdPs86764/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbyntYNpHdS3eKbCJth4vEWzdzjY6IcGJpKoQj8znUmWlD5tXhzpSPcNBYP7Yt-pAt8A/exec";
         let datosTemporales = []; 
 
         document.getElementById('fechaRegistro').valueAsDate = new Date();
@@ -336,7 +335,7 @@
                 body: JSON.stringify(payload) 
             })
             .then(() => {
-                alert("✅ Solicitud de actualización enviada. Cierra esta ventana y verifica los cambios.");
+                alert("✅ Solicitud de actualización enviada. El sistema refrescará los datos.");
                 cerrarModal();
                 buscarDatos(); 
             })
