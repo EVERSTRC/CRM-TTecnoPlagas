@@ -24,7 +24,6 @@
             <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">Registrar Servicio / Cliente</h2>
             <form id="form-registro" onsubmit="guardarDatos(event)">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    
                     <div>
                         <label class="block text-gray-700 text-sm font-semibold mb-1">Consecutivo</label>
                         <input type="text" id="consecutivo" value="Automático" readonly class="w-full p-2 border rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed outline-none font-bold">
@@ -37,7 +36,6 @@
                         <label class="block text-gray-700 text-sm font-semibold mb-1">Cédula *</label>
                         <input type="text" id="cedula" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
-
                     <div>
                         <label class="block text-gray-700 text-sm font-semibold mb-1">Sucursal</label>
                         <input type="text" id="sucursal" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
@@ -50,7 +48,6 @@
                         <label class="block text-gray-700 text-sm font-semibold mb-1">Email</label>
                         <input type="email" id="email" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
-
                     <div>
                         <label class="block text-gray-700 text-sm font-semibold mb-1">Fecha Registro *</label>
                         <input type="date" id="fechaRegistro" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
@@ -72,19 +69,15 @@
                         <label class="block text-gray-700 text-sm font-semibold mb-1">Coordenadas GPS</label>
                         <div class="flex gap-2">
                             <input type="text" id="gps" placeholder="Latitud, Longitud" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <button type="button" onclick="obtenerGPS()" class="bg-blue-100 text-blue-700 px-3 rounded-lg hover:bg-blue-200 transition text-xl" title="Obtener mi ubicación">📍</button>
+                            <button type="button" onclick="obtenerGPS('gps')" class="bg-blue-100 text-blue-700 px-3 rounded-lg hover:bg-blue-200 transition text-xl">📍</button>
                         </div>
                     </div>
                 </div>
-                
                 <div class="mb-6">
                     <label class="block text-gray-700 text-sm font-semibold mb-1">Dirección Exacta</label>
-                    <textarea id="direccion" rows="2" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Provincia, Cantón, Distrito, y señas..."></textarea>
+                    <textarea id="direccion" rows="2" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Provincia, Cantón, Distrito..."></textarea>
                 </div>
-
-                <button type="submit" class="w-full bg-blue-700 text-white p-3 rounded-lg font-bold hover:bg-blue-800 transition shadow-lg text-lg">
-                    💾 Guardar Registro
-                </button>
+                <button type="submit" class="w-full bg-blue-700 text-white p-3 rounded-lg font-bold hover:bg-blue-800 transition shadow-lg text-lg">💾 Guardar Registro</button>
             </form>
             <div id="status-registro" class="mt-4 hidden text-center font-semibold p-3 rounded-lg"></div>
         </div>
@@ -93,13 +86,11 @@
             <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">Consultar Base de Datos</h2>
             <div class="flex flex-col sm:flex-row mb-6 gap-2">
                 <input type="text" id="busqueda" placeholder="Buscar por Nombre, Cédula o Sucursal..." class="flex-grow p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                <button onclick="buscarDatos()" class="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-emerald-700 transition shadow">
-                    🔍 Buscar
-                </button>
+                <button onclick="buscarDatos()" class="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-emerald-700 transition shadow">🔍 Buscar</button>
             </div>
             
             <div class="overflow-x-auto">
-                <table class="w-full table-auto border-collapse text-left min-w-[1000px]">
+                <table class="w-full table-auto border-collapse text-left min-w-[1100px]">
                     <thead>
                         <tr class="bg-gray-100 text-gray-700 text-xs uppercase font-bold border-b border-gray-200">
                             <th class="p-2">Consec.</th>
@@ -109,19 +100,86 @@
                             <th class="p-2">Teléfono</th>
                             <th class="p-2">Dirección / GPS</th>
                             <th class="p-2">Frec. Fumigación</th>
+                            <th class="p-2 text-center">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="tabla-resultados" class="text-gray-600 text-sm divide-y divide-gray-100">
-                        <tr><td colspan="7" class="p-4 text-center text-gray-400">Haz clic en "Buscar" para cargar.</td></tr>
+                        <tr><td colspan="8" class="p-4 text-center text-gray-400">Haz clic en "Buscar" para cargar.</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </main>
 
+    <div id="modal-editar" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-3xl w-full p-6 overflow-y-auto max-h-[90vh]">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-xl font-bold text-gray-800">✏️ Editar Registro N° <span id="edit-consecutivo-titulo"></span></h3>
+                <button onclick="cerrarModal()" class="text-gray-400 hover:text-gray-600 font-bold text-2xl">×</button>
+            </div>
+            <form id="form-editar" onsubmit="actualizarDatos(event)">
+                <input type="hidden" id="edit-consecutivo">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Nombre Completo *</label>
+                        <input type="text" id="edit-nombre" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Cédula *</label>
+                        <input type="text" id="edit-cedula" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Sucursal</label>
+                        <input type="text" id="edit-sucursal" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Teléfono</label>
+                        <input type="tel" id="edit-telefono" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Email</label>
+                        <input type="email" id="edit-email" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Fecha Registro *</label>
+                        <input type="date" id="edit-fechaRegistro" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Frecuencia de Fumigación</label>
+                        <select id="edit-frecuencia" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                            <option value="">Seleccione una opción...</option>
+                            <option value="Semanal">Semanal</option>
+                            <option value="Quincenal">Quincenal</option>
+                            <option value="Mensual">Mensual</option>
+                            <option value="Bimensual">Bimensual</option>
+                            <option value="Trimestral">Trimestral</option>
+                            <option value="Semestral">Semestral</option>
+                            <option value="Anual">Anual</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Coordenadas GPS</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="edit-gps" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            <button type="button" onclick="obtenerGPS('edit-gps')" class="bg-blue-100 text-blue-700 px-3 rounded-lg hover:bg-blue-200 transition text-xl">📍</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-semibold mb-1">Dirección Exacta</label>
+                    <textarea id="edit-direccion" rows="2" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                </div>
+                <div class="flex justify-end gap-2 border-t pt-3">
+                    <button type="button" onclick="cerrarModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-bold hover:bg-gray-400 transition">Cancelar</button>
+                    <button type="submit" class="bg-blue-700 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-800 transition shadow">💾 Actualizar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
-        // URL configurada de manera precisa con tu nueva implementación de Apps Script
-        const API_URL = "https://script.google.com/macros/s/AKfycbx9ScIaau3RKFX0wtQeqRqwtBosBrn5FbTx2UofoMVHTTmgzSpuy0t911R4ArBaFBV9/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbx_oN29Gr7iQw2azaJ0y5UrIy6yEAGUD743my-9v5OQYsWkuK1M1CoQFTdQhXTPHgyl/exec";
+        let datosTemporales = []; 
 
         document.getElementById('fechaRegistro').valueAsDate = new Date();
 
@@ -140,22 +198,15 @@
             }
         }
 
-        function obtenerGPS() {
-            const inputGps = document.getElementById('gps');
+        function obtenerGPS(campoId) {
+            const inputGps = document.getElementById(campoId);
             inputGps.value = "Obteniendo...";
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        inputGps.value = position.coords.latitude + ", " + position.coords.longitude;
-                    },
-                    (error) => {
-                        alert("No se pudo obtener la ubicación. Verifica los permisos de tu navegador.");
-                        inputGps.value = "";
-                    }
+                    (position) => { inputGps.value = position.coords.latitude + ", " + position.coords.longitude; },
+                    (error) => { alert("Verifica los permisos de ubicación."); inputGps.value = ""; }
                 );
-            } else {
-                alert("Geolocalización no soportada.");
-            }
+            } else { alert("Geolocalización no soportada."); }
         }
 
         function guardarDatos(event) {
@@ -176,10 +227,7 @@
                 frecuencia: document.getElementById('frecuencia').value
             };
 
-            fetch(API_URL, {
-                method: "POST",
-                body: JSON.stringify(payload)
-            })
+            fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
             .then(res => res.json())
             .then(data => {
                 if(data.status === "success") {
@@ -187,38 +235,35 @@
                     status.innerText = "✅ ¡Guardado con éxito! Se asignó el Consecutivo N° " + data.consecutivoAsignado;
                     document.getElementById('form-registro').reset();
                     document.getElementById('fechaRegistro').valueAsDate = new Date();
-                } else {
-                    throw new Error(data.error);
-                }
+                } else { throw new Error(data.error); }
             })
             .catch(err => {
-                console.error(err);
                 status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-red-100 text-red-800 block";
-                status.innerText = "❌ Error al intentar guardar. Revisa el Apps Script.";
+                status.innerText = "❌ Error al intentar guardar.";
             });
         }
 
         function buscarDatos() {
             const query = document.getElementById('busqueda').value;
             const tbody = document.getElementById('tabla-resultados');
-            tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-blue-500 font-bold">⏳ Descargando base de datos...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-blue-500 font-bold">⏳ Descargando base de datos...</td></tr>';
 
             fetch(API_URL + "?q=" + encodeURIComponent(query))
             .then(res => res.json())
             .then(data => {
                 tbody.innerHTML = "";
+                datosTemporales = data; 
                 if(data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-gray-500">No se encontraron registros.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-gray-500">No se encontraron registros.</td></tr>';
                     return;
                 }
                 
-                data.reverse().forEach(item => {
+                data.reverse().forEach((item, index) => {
                     let fechaMostrada = item.fechaRegistro || '';
                     if(fechaMostrada && fechaMostrada.includes('T')) {
                         fechaMostrada = new Date(item.fechaRegistro).toLocaleDateString('es-ES');
                     }
-
-                    let gpsHtml = item.gps ? '<br><a href="http://maps.google.com/?q=' + item.gps + '" target="_blank" class="text-blue-500 underline text-xs">📍 Ver en Mapa</a>' : '';
+                    let gpsHtml = item.gps ? '<br><a href="https://maps.google.com/?q=' + item.gps + '" target="_blank" class="text-blue-500 underline text-xs">📍 Ver Mapa</a>' : '';
 
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-blue-50 transition border-b border-gray-100";
@@ -230,14 +275,73 @@
                         '<td class="p-2"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">' + (item.sucursal || '-') + '</span></td>' +
                         '<td class="p-2 text-sm">' + (item.telefono || '') + '<br><span class="text-xs text-gray-400">' + (item.email || '') + '</span></td>' +
                         '<td class="p-2 text-xs max-w-[200px] truncate" title="' + (item.direccion || '') + '">' + (item.direccion || '') + gpsHtml + '</td>' +
-                        '<td class="p-2"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs font-bold">' + (item.frecuencia || 'No def.') + '</span></td>';
+                        '<td class="p-2"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs font-bold">' + (item.frecuencia || 'No def.') + '</span></td>' +
+                        '<td class="p-2 text-center"><button onclick="abrirModalEditar(' + item.consecutivo + ')" class="bg-blue-600 text-white px-3 py-1.5 rounded-md font-semibold text-xs hover:bg-blue-700 transition shadow">✏️ Editar</button></td>';
                     
                     tbody.appendChild(tr);
                 });
             })
             .catch(err => {
+                tbody.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-red-500 font-semibold">❌ Error de conexión.</td></tr>';
+            });
+        }
+
+        function abrirModalEditar(consecutivo) {
+            const cliente = datosTemporales.find(item => item.consecutivo == consecutivo);
+            if (!cliente) return;
+
+            document.getElementById('edit-consecutivo').value = cliente.consecutivo;
+            document.getElementById('edit-consecutivo-titulo').innerText = cliente.consecutivo;
+            document.getElementById('edit-nombre').value = cliente.nombre || '';
+            document.getElementById('edit-cedula').value = cliente.cedula || '';
+            document.getElementById('edit-sucursal').value = cliente.sucursal || '';
+            document.getElementById('edit-telefono').value = cliente.telefono || '';
+            document.getElementById('edit-email').value = cliente.email || '';
+            document.getElementById('edit-direccion').value = cliente.direccion || '';
+            document.getElementById('edit-gps').value = cliente.gps || '';
+            
+            if(cliente.fechaRegistro) {
+                document.getElementById('edit-fechaRegistro').value = cliente.fechaRegistro.split('T')[0];
+            }
+            document.getElementById('edit-frecuencia').value = cliente.frecuencia || '';
+
+            document.getElementById('modal-editar').classList.remove('hidden');
+        }
+
+        function cerrarModal() {
+            document.getElementById('modal-editar').classList.add('hidden');
+        }
+
+        function actualizarDatos(event) {
+            event.preventDefault();
+            alert("⏳ Enviando actualizaciones a Google Sheets, por favor espera...");
+
+            const payload = {
+                accion: "editar",
+                consecutivo: document.getElementById('edit-consecutivo').value,
+                nombre: document.getElementById('edit-nombre').value,
+                cedula: document.getElementById('edit-cedula').value,
+                sucursal: document.getElementById('edit-sucursal').value,
+                telefono: document.getElementById('edit-telefono').value,
+                email: document.getElementById('edit-email').value,
+                direccion: document.getElementById('edit-direccion').value,
+                gps: document.getElementById('edit-gps').value,
+                fechaRegistro: document.getElementById('edit-fechaRegistro').value,
+                frecuencia: document.getElementById('edit-frecuencia').value
+            };
+
+            fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    alert("✅ ¡Registro actualizado con éxito en Google Sheets!");
+                    cerrarModal();
+                    buscarDatos(); 
+                } else { alert("❌ Error: " + data.error); }
+            })
+            .catch(err => {
                 console.error(err);
-                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-red-500 font-semibold">❌ Error de conexión o datos corruptos.</td></tr>';
+                alert("❌ Error de conexión al intentar actualizar.");
             });
         }
     </script>
