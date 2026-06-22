@@ -178,7 +178,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyntYNpHdS3eKbCJth4vEWzdzjY6IcGJpKoQj8znUmWlD5tXhzpSPcNBYP7Yt-pAt8A/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbylvEVJuu7FNEewW4SI219-Ea33t6SC5WLOzs7vIZXcZzgCSp8BsrtcyFumPc9bP8/exec";
         let datosTemporales = []; 
 
         document.getElementById('fechaRegistro').valueAsDate = new Date();
@@ -215,7 +215,8 @@
             status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-blue-100 text-blue-800 block";
             status.innerText = "⏳ Guardando registro en la hoja de cálculo...";
 
-            const payload = {
+            const params = new URLSearchParams({
+                accion: "registrar",
                 nombre: document.getElementById('nombre').value,
                 cedula: document.getElementById('cedula').value,
                 sucursal: document.getElementById('sucursal').value,
@@ -225,14 +226,17 @@
                 gps: document.getElementById('gps').value,
                 fechaRegistro: document.getElementById('fechaRegistro').value,
                 frecuencia: document.getElementById('frecuencia').value
-            };
+            });
 
-            fetch(API_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) })
-            .then(() => {
-                status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-green-100 text-green-800 block";
-                status.innerText = "✅ Envío completado. Revisa tu Google Sheets para confirmar.";
-                document.getElementById('form-registro').reset();
-                document.getElementById('fechaRegistro').valueAsDate = new Date();
+            fetch(`${API_URL}?${params.toString()}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-green-100 text-green-800 block";
+                    status.innerText = "✅ ¡Guardado con éxito! Se asignó el Consecutivo N° " + data.consecutivoAsignado;
+                    document.getElementById('form-registro').reset();
+                    document.getElementById('fechaRegistro').valueAsDate = new Date();
+                } else { throw new Error(data.error); }
             })
             .catch(err => {
                 status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-red-100 text-red-800 block";
@@ -245,7 +249,7 @@
             const tbody = document.getElementById('tabla-resultados');
             tbody.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-blue-500 font-bold">⏳ Descargando base de datos...</td></tr>';
 
-            fetch(API_URL + "?q=" + encodeURIComponent(query))
+            fetch(`${API_URL}?q=${encodeURIComponent(query)}`)
             .then(res => res.json())
             .then(data => {
                 tbody.innerHTML = "";
@@ -260,7 +264,7 @@
                     if(fechaMostrada && fechaMostrada.includes('T')) {
                         fechaMostrada = new Date(item.fechaRegistro).toLocaleDateString('es-ES');
                     }
-                    let gpsHtml = item.gps ? `<br><a href="https://maps.google.com/?q=${encodeURIComponent(item.gps)}" target="_blank" class="text-blue-500 underline text-xs">📍 Ver Mapa</a>` : '';
+                    let gpsHtml = item.gps ? `<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.gps)}" target="_blank" class="text-blue-500 underline text-xs">📍 Ver Mapa</a>` : '';
 
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-blue-50 transition border-b border-gray-100";
@@ -277,12 +281,11 @@
                             <button onclick="abrirModalEditar(${item.consecutivo})" class="bg-blue-600 text-white px-3 py-1.5 rounded-md font-semibold text-xs hover:bg-blue-700 transition shadow">✏️ Editar</button>
                         </td>
                     `;
-                    
                     tbody.appendChild(tr);
                 });
             })
             .catch(err => {
-                tbody.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-red-500 font-semibold">❌ Error de conexión. Asegúrate de haber publicado el script como "Cualquiera".</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-red-500 font-semibold">❌ Error de conexión o permisos en Google Script.</td></tr>';
             });
         }
 
@@ -315,7 +318,7 @@
         function actualizarDatos(event) {
             event.preventDefault();
 
-            const payload = {
+            const params = new URLSearchParams({
                 accion: "editar",
                 consecutivo: document.getElementById('edit-consecutivo').value,
                 nombre: document.getElementById('edit-nombre').value,
@@ -327,21 +330,20 @@
                 gps: document.getElementById('edit-gps').value,
                 fechaRegistro: document.getElementById('edit-fechaRegistro').value,
                 frecuencia: document.getElementById('edit-frecuencia').value
-            };
+            });
 
-            fetch(API_URL, { 
-                method: "POST",
-                mode: "no-cors", 
-                body: JSON.stringify(payload) 
-            })
-            .then(() => {
-                alert("✅ Solicitud de actualización enviada. El sistema refrescará los datos.");
-                cerrarModal();
-                buscarDatos(); 
+            fetch(`${API_URL}?${params.toString()}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    alert("✅ ¡Registro modificado con éxito en Google Sheets!");
+                    cerrarModal();
+                    buscarDatos(); 
+                } else { alert("❌ Error: " + (data.error || "No se pudo actualizar")); }
             })
             .catch(err => {
                 console.error(err);
-                alert("❌ Error al intentar conectar.");
+                alert("❌ Error de conexión al intentar actualizar. Asegúrate de haber publicado la nueva versión en Apps Script.");
             });
         }
     </script>
