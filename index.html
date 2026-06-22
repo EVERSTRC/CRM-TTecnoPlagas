@@ -120,7 +120,8 @@
     </main>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyeALTYXl0NFunhlXoLyzkpOSjphebsqETSmQwPJAADa4i_xncKPCN5Zqeq7cEt5teF/exec";
+        // URL configurada de manera precisa con tu nueva implementación de Apps Script
+        const API_URL = "https://script.google.com/macros/s/AKfycbx9ScIaau3RKFX0wtQeqRqwtBosBrn5FbTx2UofoMVHTTmgzSpuy0t911R4ArBaFBV9/exec";
 
         document.getElementById('fechaRegistro').valueAsDate = new Date();
 
@@ -217,12 +218,11 @@
                         fechaMostrada = new Date(item.fechaRegistro).toLocaleDateString('es-ES');
                     }
 
-                    let gpsHtml = item.gps ? '<br><a href="https://maps.google.com/?q=' + item.gps + '" target="_blank" class="text-blue-500 underline text-xs">📍 Ver en Mapa</a>' : '';
+                    let gpsHtml = item.gps ? '<br><a href="http://maps.google.com/?q=' + item.gps + '" target="_blank" class="text-blue-500 underline text-xs">📍 Ver en Mapa</a>' : '';
 
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-blue-50 transition border-b border-gray-100";
                     
-                    // Concatenación clásica segura para evitar fallos de renderizado de texto en GitHub
                     tr.innerHTML = 
                         '<td class="p-2 font-mono text-xs text-gray-500">' + (item.consecutivo || '') + '</td>' +
                         '<td class="p-2 font-bold text-gray-800">' + (item.nombre || '') + '<br><span class="text-xs font-normal text-gray-500">Reg: ' + fechaMostrada + '</span></td>' +
