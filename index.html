@@ -3,691 +3,310 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Control de Fumigaciones y Agenda</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1d4ed8">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>TecnoPlagas Pro v24.2</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        @media print {
-            body * { visibility: hidden; }
-            #area-impresion-pdf, #area-impresion-pdf * { visibility: visible; }
-            #area-impresion-pdf { position: absolute; left: 0; top: 0; width: 100%; }
-            header, main, nav, button, form, .fixed { display: none !important; }
-        }
+        :root { --primary: #1e272e; --accent: #05c46b; }
+        body { background: #f1f2f6; font-family: 'Segoe UI', sans-serif; font-size: 0.85rem; }
+        .card { border-radius: 10px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 20px; padding: 20px; background: #fff; }
+        .nav-link { color: #57606f; font-weight: bold; cursor: pointer; }
+        .nav-pills .nav-link.active { background-color: var(--primary); color: white !important; }
+        .form-label { font-weight: 700; font-size: 0.75rem; text-transform: uppercase; color: #57606f; margin-top: 5px; }
+        .readonly-cons { background: #fffaf0 !important; color: #ff4757; font-weight: bold; border: 1px solid #ff4757; }
+        .section-header { border-left: 4px solid var(--accent); padding-left: 10px; margin-bottom: 15px; font-weight: 800; }
     </style>
 </head>
-<body class="bg-gray-100 font-sans min-h-screen flex flex-col">
+<body>
 
-    <header class="bg-blue-700 text-white shadow-md p-4">
-        <div class="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-            <h1 class="text-xl font-bold tracking-wide">🕷️ Gestión de Fumigaciones y Agenda</h1>
-            <nav class="flex space-x-2">
-                <button id="btn-registro" class="px-3 py-2 rounded bg-blue-900 font-semibold transition" onclick="cambiarPestana('registro')">Nuevo Registro</button>
-                <button id="btn-consulta" class="px-3 py-2 rounded hover:bg-blue-600 font-semibold transition" onclick="cambiarPestana('consulta')">Consultar Clientes</button>
-                <button id="btn-facturacion" class="px-3 py-2 rounded hover:bg-blue-600 font-semibold transition" onclick="cambiarPestana('facturacion')">🧾 Facturación</button>
-            </nav>
-        </div>
-    </header>
+<div class="bg-white sticky-top shadow-sm p-2 mb-3">
+    <ul class="nav nav-pills justify-content-center" id="mainTabs">
+        <li class="nav-item"><a class="nav-link active" onclick="showTab('v-clientes', this)">CLIENTES</a></li>
+        <li class="nav-item"><a class="nav-link" onclick="showTab('v-cebaderos', this)">CEBADEROS</a></li>
+        <li class="nav-item"><a class="nav-link" onclick="showTab('v-visitas', this)">VISITAS</a></li>
+        <li class="nav-item"><a class="nav-link" onclick="showTab('v-factura', this)">FACTURACIÓN</a></li>
+    </ul>
+</div>
 
-    <main class="flex-grow container mx-auto p-4 max-w-6xl mt-6">
-        
-        <div id="vista-registro" class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
-            <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">Registrar Servicio / Cliente</h2>
-            <form id="form-registro" onsubmit="guardarDatos(event)">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Consecutivo</label>
-                        <input type="text" id="consecutivo" value="Automático" readonly class="w-full p-2 border rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed outline-none font-bold">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Nombre Completo *</label>
-                        <input type="text" id="nombre" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Cédula *</label>
-                        <input type="text" id="cedula" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Sucursal</label>
-                        <input type="text" id="sucursal" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Teléfono</label>
-                        <input type="tel" id="telefono" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Email</label>
-                        <input type="email" id="email" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Fecha Registro *</label>
-                        <input type="date" id="fechaRegistro" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Frecuencia de Fumigación</label>
-                        <select id="frecuencia" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                            <option value="">Seleccione una opción...</option>
-                            <option value="Semanal">Semanal</option>
-                            <option value="Quincenal">Quincenal</option>
-                            <option value="Mensual">Mensual</option>
-                            <option value="Bimensual">Bimensual</option>
-                            <option value="Trimestral">Trimestral</option>
-                            <option value="Semestral">Semestral</option>
-                            <option value="Anual">Anual</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Coordenadas GPS</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="gps" placeholder="Latitud, Longitud" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <button type="button" onclick="obtenerGPS('gps')" class="bg-blue-100 text-blue-700 px-3 rounded-lg hover:bg-blue-200 transition text-xl">📍</button>
-                        </div>
-                    </div>
+<div class="container">
+    
+    <div id="v-clientes" class="tab-content">
+        <div class="card">
+            <h6 class="section-header">MAESTRO DE CLIENTES</h6>
+            <form id="formClientes" class="row g-2">
+                <div class="col-md-2">
+                    <label class="form-label">Consecutivo</label>
+                    <input type="text" id="c_con" class="form-control readonly-cons" placeholder="Auto" readonly>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Dirección Exacta</label>
-                        <textarea id="direccion" rows="2" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Dirección detallada..."></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Comentarios / Observaciones Internas</label>
-                        <textarea id="comentarios" rows="2" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Notas sobre el cliente..."></textarea>
-                    </div>
+                <div class="col-md-6">
+                    <label class="form-label">Nombre Completo</label>
+                    <input type="text" id="c_nom" class="form-control" required>
                 </div>
-                <button type="submit" class="w-full bg-blue-700 text-white p-3 rounded-lg font-bold hover:bg-blue-800 transition shadow-lg text-lg">💾 Guardar Registro</button>
-            </form>
-            <div id="status-registro" class="mt-4 hidden text-center font-semibold p-3 rounded-lg"></div>
-        </div>
-
-        <div id="vista-consulta" class="bg-white p-6 rounded-xl shadow-md border border-gray-200 hidden">
-            <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">Consultar Base de Datos</h2>
-            <div class="flex flex-col sm:flex-row mb-6 gap-2">
-                <input type="text" id="busqueda" placeholder="Buscar por Nombre, Cédula o Sucursal..." class="flex-grow p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                <button onclick="buscarDatos()" class="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-emerald-700 transition shadow">🔍 Buscar</button>
-            </div>
-            
-            <div class="overflow-x-auto">
-                <table class="w-full table-auto border-collapse text-left min-w-[1200px]">
-                    <thead>
-                        <tr class="bg-gray-100 text-gray-700 text-xs uppercase font-bold border-b border-gray-200">
-                            <th class="p-2">Consec.</th>
-                            <th class="p-2">Nombre Completo</th>
-                            <th class="p-2">Cédula</th>
-                            <th class="p-2">Sucursal</th>
-                            <th class="p-2">Teléfono</th>
-                            <th class="p-2">Dirección / GPS</th>
-                            <th class="p-2">Comentarios</th>
-                            <th class="p-2">Frec. Fumigación</th>
-                            <th class="p-2 text-center">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-resultados" class="text-gray-600 text-sm divide-y divide-gray-100">
-                        <tr><td colspan="9" class="p-4 text-center text-gray-400">Haz clic en "Buscar" para cargar.</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="vista-facturacion" class="bg-white p-6 rounded-xl shadow-md border border-gray-200 hidden">
-            <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">🧾 Emitir Factura de Servicio</h2>
-            <form id="form-factura" onsubmit="guardarFactura(event)">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">N° Factura</label>
-                        <input type="text" id="fact-numero" value="Automático" readonly class="w-full p-2 border rounded-lg bg-gray-100 text-gray-500 font-bold outline-none cursor-not-allowed">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Consecutivo Cliente (Asociado)</label>
-                        <input type="text" id="fact-cliente-id" placeholder="Opcional / Automático" class="w-full p-2 border rounded-lg bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Fecha Emisión *</label>
-                        <input type="date" id="fact-fecha" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Nombre / Razón Social *</label>
-                        <select id="fact-nombre" required onchange="autoRellenarDatosFactura(this.value)" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                            <option value="">Seleccione un cliente...</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Cédula Física o Jurídica *</label>
-                        <input type="text" id="fact-cedula" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Método de Pago *</label>
-                        <select id="fact-metodo" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                            <option value="Efectivo">Efectivo</option>
-                            <option value="Transferencia">Transferencia Bancaria</option>
-                            <option value="Sinpe Movil">Sinpe Móvil</option>
-                            <option value="Tarjeta">Tarjeta de Crédito/Débito</option>
-                        </select>
-                    </div>
+                <div class="col-md-4">
+                    <label class="form-label">Cédula / ID</label>
+                    <input type="text" id="c_id" class="form-control" required>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                    <div class="md:col-span-1">
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Cantidad *</label>
-                        <input type="number" id="fact-cantidad" value="1" min="1" required oninput="calcularTotalesFactura()" class="w-full p-2 border rounded-lg font-bold text-gray-800 focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div class="md:col-span-3">
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Detalle del Servicio Realizado *</label>
-                        <textarea id="fact-detalle" required rows="1" placeholder="Ej: Servicio de fumigación..." class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
-                    </div>
+                <div class="col-md-4">
+                    <label class="form-label">Sucursal</label>
+                    <input type="text" id="c_suc" class="form-control">
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4 bg-gray-50 p-4 rounded-xl">
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Precio Unitario Subtotal *</label>
-                        <input type="number" step="0.01" id="fact-subtotal" required oninput="calcularTotalesFactura()" placeholder="0.00" class="w-full p-2 border rounded-lg font-bold text-gray-800 focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Impuesto (Opcional %)</label>
-                        <input type="number" step="0.01" id="fact-impuesto-porcentaje" value="0" oninput="calcularTotalesFactura()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-blue-700 text-sm font-bold mb-1">Total Neto (Cant × Subt + Imp)</label>
-                        <input type="text" id="fact-total" value="0.00" readonly class="w-full p-2 border border-blue-300 rounded-lg bg-blue-100 text-blue-800 font-black text-lg outline-none cursor-not-allowed">
-                    </div>
+                <div class="col-md-4">
+                    <label class="form-label">Teléfono</label>
+                    <input type="tel" id="c_tel" class="form-control">
                 </div>
-
-                <button type="submit" class="w-full bg-emerald-600 text-white p-3 rounded-lg font-bold hover:bg-emerald-700 transition shadow-lg text-lg mt-6">🧾 Guardar y Generar PDF</button>
-            </form>
-            <div id="status-factura" class="mt-4 hidden text-center font-semibold p-3 rounded-lg"></div>
-        </div>
-    </main>
-
-    <div id="area-impresion-pdf" class="hidden p-8 max-w-xl mx-auto bg-white text-gray-800 font-mono text-sm leading-relaxed">
-        <div class="text-center border-b-2 border-dashed pb-4 mb-4">
-            <h2 class="text-xl font-bold uppercase tracking-wider">🪰 Control de Plagas Profesionales</h2>
-            <p class="text-xs">Servicios Especializados de Fumigación y Desinfección</p>
-            <p class="text-xs mt-1">Tel: +506 8888-8888 | info@fumigaciones.com</p>
-        </div>
-        <div class="mb-4">
-            <div class="flex justify-between font-bold text-base">
-                <span>COMPROBANTE DE FACTURA</span>
-                <span id="pdf-num-factura">FAC-TEMP</span>
-            </div>
-            <p class="mt-2"><strong>Fecha Emisión:</strong> <span id="pdf-fecha"></span></p>
-            <p><strong>Cliente:</strong> <span id="pdf-cliente-nombre"></span></p>
-            <p><strong>Identificación/Cédula:</strong> <span id="pdf-cliente-cedula"></span></p>
-            <p><strong>ID Cliente:</strong> #<span id="pdf-cliente-id"></span></p>
-        </div>
-        <table class="w-full text-left border-t border-b border-dashed my-4 py-2">
-            <thead>
-                <tr class="font-bold">
-                    <th class="w-12 py-1">Cant</th>
-                    <th class="py-1">Descripción</th>
-                    <th class="text-right w-24 py-1">Precio Un.</th>
-                    <th class="text-right w-24 py-1">Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr class="align-top">
-                    <td id="pdf-tabla-cant" class="py-1">1</td>
-                    <td id="pdf-tabla-detalle" class="py-1 pr-2">Servicio Estándar</td>
-                    <td id="pdf-tabla-precio" class="text-right py-1">0.00</td>
-                    <td id="pdf-tabla-subtotal" class="text-right py-1">0.00</td>
-                </tr>
-            </tbody>
-        </table>
-        <div class="w-1/2 ml-auto text-right space-y-1">
-            <p><strong>Subtotal:</strong> <span id="pdf-resumen-subtotal">0.00</span></p>
-            <p><strong>Impuestos:</strong> <span id="pdf-resumen-impuesto">0.00</span></p>
-            <div class="border-t border-dashed pt-1 text-base font-bold text-gray-900">
-                <span>Total: <span id="pdf-resumen-total">0.00</span></span>
-            </div>
-        </div>
-        <div class="mt-6 border-t-2 border-dashed pt-4 text-center text-xs">
-            <p><strong>Método de Pago:</strong> <span id="pdf-metodo-pago"></span></p>
-            <p class="mt-3 font-bold">¡Gracias por confiar en nuestra gestión de control de plagas!</p>
-        </div>
-    </div>
-
-    <div id="modal-editar" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-xl shadow-2xl max-w-3xl w-full p-6 overflow-y-auto max-h-[90vh]">
-            <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="text-xl font-bold text-gray-800">✏️ Editar Registro N° <span id="edit-consecutivo-titulo"></span></h3>
-                <button onclick="cerrarModal()" class="text-gray-400 hover:text-gray-600 font-bold text-2xl">×</button>
-            </div>
-            <form id="form-editar" onsubmit="actualizarDatos(event)">
-                <input type="hidden" id="edit-consecutivo">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Nombre Completo *</label>
-                        <input type="text" id="edit-nombre" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Cédula *</label>
-                        <input type="text" id="edit-cedula" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Sucursal</label>
-                        <input type="text" id="edit-sucursal" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Teléfono</label>
-                        <input type="tel" id="edit-telefono" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Email</label>
-                        <input type="email" id="edit-email" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Fecha Registro *</label>
-                        <input type="date" id="edit-fechaRegistro" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Frecuencia de Fumigación</label>
-                        <select id="edit-frecuencia" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                            <option value="">Seleccione una opción...</option>
-                            <option value="Semanal">Semanal</option>
-                            <option value="Quincenal">Quincenal</option>
-                            <option value="Mensual">Mensual</option>
-                            <option value="Bimensual">Bimensual</option>
-                            <option value="Trimestral">Trimestral</option>
-                            <option value="Semestral">Semestral</option>
-                            <option value="Anual">Anual</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Coordenadas GPS</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="edit-gps" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <button type="button" onclick="obtenerGPS('edit-gps')" class="bg-blue-100 text-blue-700 px-3 rounded-lg hover:bg-blue-200 transition text-xl">📍</button>
-                        </div>
-                    </div>
+                <div class="col-md-4">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="c_mail" class="form-control">
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Dirección Exacta</label>
-                        <textarea id="edit-direccion" rows="2" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Comentarios / Observaciones</label>
-                        <textarea id="edit-comentarios" rows="2" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
-                    </div>
+                <div class="col-md-6">
+                    <label class="form-label">Dirección Exacta</label>
+                    <input type="text" id="c_dir" class="form-control">
                 </div>
-                <div class="flex justify-end gap-2 border-t pt-3">
-                    <button type="button" onclick="cerrarModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-bold hover:bg-gray-400 transition">Cancelar</button>
-                    <button type="submit" class="bg-blue-700 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-800 transition shadow">💾 Actualizar Cambios</button>
+                <div class="col-md-3">
+                    <label class="form-label">Coordenadas GPS</label>
+                    <input type="text" id="c_gps" class="form-control" placeholder="Lat, Lon">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-primary">Fecha Registro</label>
+                    <input type="date" id="c_freg" class="form-control" required>
+                </div>
+                <div class="col-12 mt-3">
+                    <button type="button" class="btn btn-dark w-100 fw-bold" onclick="guardarFormulario('Clientes', 'c')">GUARDAR CLIENTE</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div id="modal-calendar" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6">
-            <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="text-xl font-bold text-gray-800">📅 Agendar Cita de Calendar</h3>
-                <button onclick="cerrarModalCalendar()" class="text-gray-400 hover:text-gray-600 font-bold text-2xl">×</button>
-            </div>
-            <form id="form-calendar" onsubmit="crearEventoCalendar(event)">
-                <div class="mb-3">
-                    <label class="block text-gray-700 text-sm font-semibold mb-1">Título del Evento *</label>
-                    <input type="text" id="cal-titulo" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                </div>
-                <div class="grid grid-cols-2 gap-2 mb-3">
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Inicio Cita *</label>
-                        <input type="datetime-local" id="cal-inicio" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Fin Cita *</label>
-                        <input type="datetime-local" id="cal-fin" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label class="block text-gray-700 text-sm font-semibold mb-1">Monto a Facturar</label>
-                    <input type="text" id="cal-monto" oninput="actualizarDetalleDinamico()" placeholder="Ej. $50, 45000..." class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                </div>
-                <div class="mb-3">
-                    <label class="block text-blue-700 text-sm font-bold mb-1">✍️ Notas o Comentarios Adicionales de esta Cita</label>
-                    <input type="text" id="cal-comentario-cita" oninput="actualizarDetalleDinamico()" class="w-full p-2 border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-blue-50">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-500 text-xs font-semibold mb-1">Vista previa del Detalle Final:</label>
-                    <textarea id="cal-descripcion" rows="5" class="w-full p-2 border rounded-lg bg-gray-100 text-xs text-gray-600 font-mono outline-none cursor-not-allowed" readonly></textarea>
-                </div>
-                <div class="flex justify-end gap-2 border-t pt-3">
-                    <button type="button" onclick="cerrarModalCalendar()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-bold hover:bg-gray-400 transition">Cancelar</button>
-                    <button type="submit" id="btn-submit-calendar" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 transition shadow">🗓️ Crear Cita</button>
+    <div id="v-cebaderos" class="tab-content d-none">
+        <div class="card">
+            <h6 class="section-header text-success">BASE DE DATOS CEBADEROS</h6>
+            <form id="formCebaderos" class="row g-2">
+                <div class="col-md-2"><label class="form-label">Consecutivo</label><input type="text" id="ceb_con" class="form-control readonly-cons" readonly></div>
+                <div class="col-md-6"><label class="form-label">Cliente</label><select id="ceb_nom" class="form-select select-clientes-lista"></select></div>
+                <div class="col-md-4"><label class="form-label">Sucursal</label><input type="text" id="ceb_suc" class="form-control"></div>
+                <div class="col-md-4"><label class="form-label">Fecha</label><input type="date" id="ceb_fec" class="form-control"></div>
+                <div class="col-md-4"><label class="form-label">Hora</label><input type="time" id="ceb_hor" class="form-control"></div>
+                <div class="col-md-4"><label class="form-label">Técnico</label><input type="text" id="ceb_tec" class="form-control"></div>
+                <div class="col-12 mt-3">
+                    <button type="button" class="btn btn-success w-100 fw-bold" onclick="alert('Funcionalidad de añadir estaciones en desarrollo estructural')">GUARDAR REPORTE CEBADEROS</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <script>
-        // URL ACTUALIZADA CON TU CLAVE CORRECTA Y TERMINACIÓN /EXEC
-        const API_URL = "https://script.google.com/macros/s/AKfycbwkgmrOl4E8MI4x5wB1qAoG5eMJN7U-_a7naTbQ6Z7AUNxnDaWM1BND8P-dfrUhv81X/exec"; 
-        let datosTemporales = []; 
-        let clienteSeleccionadoParaCita = null;
+    <div id="v-visitas" class="tab-content d-none">
+        <div class="card">
+            <h6 class="section-header text-warning">REGISTRO DE VISITAS TECNICAS</h6>
+            <form id="formVisitas" class="row g-2">
+                <div class="col-md-2"><label class="form-label">Consecutivo</label><input type="text" id="v_con" class="form-control readonly-cons" readonly></div>
+                <div class="col-md-6"><label class="form-label">Cliente</label><select id="v_nom" class="form-select select-clientes-lista"></select></div>
+                <div class="col-md-4"><label class="form-label">Sucursal</label><input type="text" id="v_suc" class="form-control"></div>
+                <div class="col-12 mt-3">
+                    <button type="button" class="btn btn-warning w-100 fw-bold" onclick="guardarFormulario('Visitas', 'v')">REGISTRAR VISITA</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-        document.getElementById('fechaRegistro').valueAsDate = new Date();
-        document.getElementById('fact-fecha').valueAsDate = new Date();
-
-        window.addEventListener('DOMContentLoaded', () => {
-            fetch(API_URL)
-            .then(res => res.json())
-            .then(data => { datosTemporales = data; })
-            .catch(err => console.warn("Esperando base de datos activa."));
-        });
-
-        function cambiarPestana(pestana) {
-            document.getElementById('vista-registro').classList.add('hidden');
-            document.getElementById('vista-consulta').classList.add('hidden');
-            document.getElementById('vista-facturacion').classList.add('hidden');
-            document.getElementById('btn-registro').classList.remove('bg-blue-900');
-            document.getElementById('btn-consulta').classList.remove('bg-blue-900');
-            document.getElementById('btn-facturacion').classList.remove('bg-blue-900');
-
-            if(pestana === 'registro') {
-                document.getElementById('vista-registro').classList.remove('hidden');
-                document.getElementById('btn-registro').classList.add('bg-blue-900');
-            } else if(pestana === 'consulta') {
-                document.getElementById('vista-consulta').classList.remove('hidden');
-                document.getElementById('btn-consulta').classList.add('bg-blue-900');
-                buscarDatos(); 
-            } else if(pestana === 'facturacion') {
-                document.getElementById('vista-facturacion').classList.remove('hidden');
-                document.getElementById('btn-facturacion').classList.add('bg-blue-900');
-                actualizarDesplegableClientes();
-            }
-        }
-
-        function obtenerGPS(campoId) {
-            const inputGps = document.getElementById(campoId);
-            inputGps.value = "Obteniendo...";
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => { inputGps.value = position.coords.latitude + ", " + position.coords.longitude; },
-                    (error) => { alert("Permisos denegados."); inputGps.value = ""; }
-                );
-            } else { alert("GPS no soportado."); }
-        }
-
-        function guardarDatos(event) {
-            event.preventDefault();
-            const status = document.getElementById('status-registro');
-            status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-blue-100 text-blue-800 block";
-            status.innerText = "⏳ Guardando registro...";
-
-            const dataObj = {
-                accion: "registrar",
-                nombre: document.getElementById('nombre').value,
-                cedula: document.getElementById('cedula').value,
-                sucursal: document.getElementById('sucursal').value,
-                telefono: document.getElementById('telefono').value,
-                email: document.getElementById('email').value,
-                direccion: document.getElementById('direccion').value,
-                gps: document.getElementById('gps').value,
-                fechaRegistro: document.getElementById('fechaRegistro').value,
-                frecuencia: document.getElementById('frecuencia').value,
-                comentarios: document.getElementById('comentarios').value
-            };
-            
-            fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(dataObj)
-            })
-            .then(() => {
-                status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-green-100 text-green-800 block";
-                status.innerText = "✅ Sincronizado correctamente.";
-                document.getElementById('form-registro').reset();
-                document.getElementById('fechaRegistro').valueAsDate = new Date();
-                fetch(API_URL).then(res => res.json()).then(data => { datosTemporales = data; });
-            })
-            .catch(() => {
-                status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-red-100 text-red-800 block";
-                status.innerText = "❌ Error de red.";
-            });
-        }
-
-        function buscarDatos() {
-            const query = document.getElementById('busqueda').value;
-            const tbody = document.getElementById('tabla-resultados');
-            tbody.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-blue-500 font-bold">⏳ Cargando base de datos...</td></tr>';
-
-            fetch(`${API_URL}?q=${encodeURIComponent(query)}`)
-            .then(res => res.json())
-            .then(data => {
-                tbody.innerHTML = "";
-                if(data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-gray-500">Sin coincidencias.</td></tr>';
-                    return;
-                }
+    <div id="v-factura" class="tab-content d-none">
+        <div class="card">
+            <h6 class="section-header text-info">MÓDULO DE FACTURACIÓN</h6>
+            <form id="formFacturacion" class="row g-2">
+                <div class="col-md-3">
+                    <label class="form-label">Número de Factura</label>
+                    <input type="text" id="f_con" class="form-control readonly-cons" placeholder="Auto" readonly>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-primary fw-bold">Nombre o Razón Social (Leído del Maestro)</label>
+                    <select id="f_nom" class="form-select select-clientes-lista" onchange="autoRellenarCamposFactura()"></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">ID / Cédula Cliente</label>
+                    <input type="text" id="f_id" class="form-control" readonly>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Fecha Emisión</label>
+                    <input type="date" id="f_fec" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Método de Pago</label>
+                    <select id="f_med" class="form-select">
+                        <option>Sinpe</option>
+                        <option>Efectivo</option>
+                        <option>Transferencia</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Tipo Factura</label>
+                    <select id="f_tip" class="form-select">
+                        <option>Contado</option>
+                        <option>Crédito</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Teléfono Contacto</label>
+                    <input type="text" id="f_tel" class="form-control" readonly>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Lugar de Servicio</label>
+                    <input type="text" id="f_lug" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Dirección de Envío</label>
+                    <input type="text" id="f_dir" class="form-control" readonly>
+                </div>
                 
-                data.reverse().forEach((item) => {
-                    let fechaMostrada = item.fechaRegistro || '';
-                    if(fechaMostrada && typeof fechaMostrada === 'string' && fechaMostrada.includes('T')) {
-                        fechaMostrada = new Date(item.fechaRegistro).toLocaleDateString('es-ES');
-                    }
-                    let gpsHtml = item.gps ? `<br><a href="https://maps.google.com/?q=${encodeURIComponent(item.gps)}" target="_blank" class="text-blue-500 underline text-xs">📍 Ver Mapa</a>` : '';
+                <hr class="my-3">
+                
+                <div class="col-md-2">
+                    <label class="form-label">Cantidad</label>
+                    <input type="number" id="f_can" class="form-control" value="1" oninput="calcularMontosFactura()">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Precio Unitario (₡)</label>
+                    <input type="number" id="f_pre" class="form-control" placeholder="0.00" oninput="calcularMontosFactura()">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Subtotal</label>
+                    <input type="text" id="f_sub" class="form-control bg-light" readonly>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">IVA (13%)</label>
+                    <input type="text" id="f_iva" class="form-control bg-light" readonly>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label text-danger fw-bold">TOTAL FACTURA</label>
+                    <input type="text" id="f_tot" class="form-control fw-bold bg-warning-subtle" readonly>
+                </div>
+                
+                <div class="col-12 mt-4">
+                    <button type="button" class="btn btn-info w-100 fw-bold text-white" onclick="guardarFormulario('Facturacion', 'f')">REGISTRAR FACTURACIÓN</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-blue-50 transition border-b border-gray-100";
-                    tr.innerHTML = `
-                        <td class="p-2 font-mono text-xs text-gray-500">${item.consecutivo || ''}</td>
-                        <td class="p-2 font-bold text-gray-800">${item.nombre || ''}<br><span class="text-xs font-normal text-gray-500">Reg: ${fechaMostrada}</span></td>
-                        <td class="p-2">${item.cedula || ''}</td>
-                        <td class="p-2"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">${item.sucursal || '-'}</span></td>
-                        <td class="p-2 text-sm">${item.telefono || ''}<br><span class="text-xs text-gray-400">${item.email || ''}</span></td>
-                        <td class="p-2 text-xs max-w-[180px] truncate">${item.direccion || ''}${gpsHtml}</td>
-                        <td class="p-2 text-xs text-gray-500 italic max-w-[150px] truncate">${item.comentarios || '-'}</td>
-                        <td class="p-2"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs font-bold">${item.frecuencia || 'Regular'}</span></td>
-                        <td class="p-2">
-                            <div class="flex flex-col gap-1 items-center">
-                                <button onclick="abrirModalEditar(${item.consecutivo})" class="w-full bg-blue-600 text-white px-2 py-0.5 rounded font-semibold text-xs hover:bg-blue-700 transition">✏️ Editar</button>
-                                <button onclick="abrirModalCalendar(${item.consecutivo})" class="w-full bg-indigo-600 text-white px-2 py-0.5 rounded font-semibold text-xs hover:bg-indigo-700 transition">📅 Agenda</button>
-                                <button onclick="asociarClienteAFactura(${item.consecutivo})" class="w-full bg-emerald-600 text-white px-2 py-0.5 rounded font-semibold text-xs hover:bg-emerald-700 transition">🧾 Facturar</button>
-                            </div>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
+</div>
+
+<script>
+    // URL Única de Conexión de Google Apps Script suministrada
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx3l9ZT-P3takIBvyk5YJ7aP7gVskOLeym57Slm4ekgM1ypi-BeQAqg9JYzrb23Zlno/exec";
+    let baseClientes = [];
+
+    // Cambiar dinámicamente entre pestañas
+    function showTab(tabId, el) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.add('d-none'));
+        document.getElementById(tabId).classList.remove('d-none');
+        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+        el.classList.add('active');
+    }
+
+    // Cargar la base de clientes desde Google Sheets en tiempo real
+    function precargarClientesMaster() {
+        console.log("Conectando con Google Sheets para descargar maestro de clientes...");
+        
+        fetch(SCRIPT_URL)
+            .then(res => {
+                if (!res.ok) throw new Error("Error en respuesta HTTP.");
+                return res.json();
+            })
+            .then(data => {
+                baseClientes = data;
+                console.log("Clientes cargados:", baseClientes.length);
+                
+                // Buscar todos los selectores de cliente del documento
+                const selectores = document.querySelectorAll('.select-clientes-lista');
+                selectores.forEach(select => {
+                    select.innerHTML = '<option value="">Seleccione un cliente de la lista...</option>';
+                    data.forEach(c => {
+                        let op = document.createElement('option');
+                        op.value = c.nombre;
+                        op.textContent = c.nombre;
+                        // Metadatos ocultos para auto-rellenar campos derivados
+                        op.dataset.cedula = c.id;
+                        op.dataset.telefono = c.tel;
+                        op.dataset.direccion = c.dir;
+                        op.dataset.sucursal = c.suc;
+                        select.appendChild(op);
+                    });
                 });
             })
-            .catch(() => {
-                tbody.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-red-500 font-semibold">❌ Error de conexión o permisos en Google Script.</td></tr>';
+            .catch(err => {
+                console.error("Fallo crítico al sincronizar clientes:", err);
+                alert("Error de conexión o permisos en Google Script. Asegúrese de que la App de Google esté pública para 'Cualquiera'.");
             });
+    }
+
+    // Auto-rellenar campos en la factura en base al cliente seleccionado
+    function autoRellenarCamposFactura() {
+        const selector = document.getElementById("f_nom");
+        const opcion = selector.options[selector.selectedIndex];
+        
+        if(opcion && opcion.value !== "") {
+            document.getElementById("f_id").value = opcion.dataset.cedula || "";
+            document.getElementById("f_tel").value = opcion.dataset.telefono || "";
+            document.getElementById("f_dir").value = opcion.dataset.direccion || "";
+            document.getElementById("f_lug").value = opcion.dataset.sucursal || "";
+        } else {
+            document.getElementById("f_id").value = "";
+            document.getElementById("f_tel").value = "";
+            document.getElementById("f_dir").value = "";
+            document.getElementById("f_lug").value = "";
         }
+    }
 
-        function abrirModalEditar(consecutivo) {
-            const cliente = datosTemporales.find(item => item.consecutivo == consecutivo);
-            if (!cliente) return;
+    // Cálculos matemáticos en la pestaña de facturas
+    function calcularMontosFactura() {
+        const cant = parseFloat(document.getElementById("f_can").value) || 0;
+        const precio = parseFloat(document.getElementById("f_pre").value) || 0;
+        
+        const subtotal = cant * precio;
+        const iva = subtotal * 0.13;
+        const total = subtotal + iva;
+        
+        document.getElementById("f_sub").value = subtotal.toFixed(2);
+        document.getElementById("f_iva").value = iva.toFixed(2);
+        document.getElementById("f_tot").value = total.toFixed(2);
+    }
 
-            document.getElementById('edit-consecutivo').value = cliente.consecutivo;
-            document.getElementById('edit-consecutivo-titulo').innerText = cliente.consecutivo;
-            document.getElementById('edit-nombre').value = cliente.nombre || '';
-            document.getElementById('edit-cedula').value = cliente.cedula || '';
-            document.getElementById('edit-sucursal').value = cliente.sucursal || '';
-            document.getElementById('edit-telefono').value = cliente.telefono || '';
-            document.getElementById('edit-email').value = cliente.email || '';
-            document.getElementById('edit-direccion').value = cliente.direccion || '';
-            document.getElementById('edit-gps').value = cliente.gps || '';
-            document.getElementById('edit-comentarios').value = cliente.comentarios || '';
-            
-            if(cliente.fechaRegistro && cliente.fechaRegistro.includes('T')) {
-                document.getElementById('edit-fechaRegistro').value = cliente.fechaRegistro.split('T')[0];
-            }
-            document.getElementById('edit-frecuencia').value = cliente.frecuencia || '';
-            document.getElementById('modal-editar').classList.remove('hidden');
-        }
+    // Función Universal de Envío (Clientes, Visitas, Facturación)
+    function guardarFormulario(pestana, prefijo) {
+        const form = document.getElementById(`form${pestana === 'Facturacion' ? 'Facturacion' : pestana}`);
+        
+        // Empaquetar dinámicamente los datos de los inputs del formulario
+        let datos = {};
+        const inputs = form.querySelectorAll("input, select, textarea");
+        inputs.forEach(i => {
+            if(i.id) datos[i.id] = i.value;
+        });
 
-        function cerrarModal() { document.getElementById('modal-editar').classList.add('hidden'); }
+        // Enviar a Apps Script mediante POST JSON estructurado
+        fetch(SCRIPT_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ pestana: pestana, datos: datos })
+        })
+        .then(() => {
+            alert(`¡Registro en '${pestana}' guardado exitosamente en Google Sheets!`);
+            form.reset();
+            if(pestana === "Clientes") precargarClientesMaster(); // Refrescar listas inmediatamente
+        })
+        .catch(err => {
+            console.error("Error al guardar:", err);
+            alert("No se pudo conectar a la base de datos.");
+        });
+    }
 
-        function actualizarDatos(event) {
-            event.preventDefault();
-            const dataObj = {
-                accion: "editar",
-                consecutivo: document.getElementById('edit-consecutivo').value,
-                nombre: document.getElementById('edit-nombre').value,
-                cedula: document.getElementById('edit-cedula').value,
-                sucursal: document.getElementById('edit-sucursal').value,
-                telefono: document.getElementById('edit-telefono').value,
-                email: document.getElementById('edit-email').value,
-                direccion: document.getElementById('edit-direccion').value,
-                gps: document.getElementById('edit-gps').value,
-                fechaRegistro: document.getElementById('edit-fechaRegistro').value,
-                frecuencia: document.getElementById('edit-frecuencia').value,
-                comentarios: document.getElementById('edit-comentarios').value
-            };
+    // Inicialización automática de la App al cargar el DOM
+    document.addEventListener("DOMContentLoaded", () => {
+        // Fijar fecha de hoy automáticamente por defecto en registros
+        const hoy = new Date().toISOString().split('T')[0];
+        if(document.getElementById("c_freg")) document.getElementById("c_freg").value = hoy;
+        if(document.getElementById("f_fec")) document.getElementById("f_fec").value = hoy;
+        
+        precargarClientesMaster();
+    });
+</script>
 
-            fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(dataObj) })
-            .then(() => {
-                alert("✅ Registro modificado.");
-                cerrarModal();
-                fetch(API_URL).then(res => res.json()).then(data => { datosTemporales = data; buscarDatos(); });
-            });
-        }
-
-        function abrirModalCalendar(consecutivo) {
-            const cliente = datosTemporales.find(item => item.consecutivo == consecutivo);
-            if (!cliente) return;
-
-            clienteSeleccionadoParaCita = cliente; 
-            document.getElementById('cal-monto').value = ""; 
-            document.getElementById('cal-comentario-cita').value = ""; 
-            document.getElementById('cal-titulo').value = "Fumigación: " + (cliente.nombre || '');
-            
-            actualizarDetalleDinamico();
-
-            const ahora = new Date();
-            ahora.setMinutes(0);
-            document.getElementById('cal-inicio').value = ahora.toISOString().slice(0, 16);
-            ahora.setHours(ahora.getHours() + 1);
-            document.getElementById('cal-fin').value = ahora.toISOString().slice(0, 16);
-
-            document.getElementById('modal-calendar').classList.remove('hidden');
-        }
-
-        function actualizarDetalleDinamico() {
-            if (!clienteSeleccionadoParaCita) return;
-            document.getElementById('cal-descripcion').value = 
-                "Cliente: " + (clienteSeleccionadoParaCita.nombre || '') + "\n" +
-                "Teléfono: " + (clienteSeleccionadoParaCita.telefono || '') + "\n" +
-                "Dirección: " + (clienteSeleccionadoParaCita.direccion || '') + "\n" +
-                "Monto: " + (document.getElementById('cal-monto').value || 'S/D') + "\n" +
-                "Nota: " + (document.getElementById('cal-comentario-cita').value || 'Ninguna');
-        }
-
-        function cerrarModalCalendar() { document.getElementById('modal-calendar').classList.add('hidden'); }
-
-        function crearEventoCalendar(event) {
-            event.preventDefault();
-            const btn = document.getElementById('btn-submit-calendar');
-            btn.disabled = true;
-
-            const dataObj = {
-                accion: "agendar_evento",
-                titulo: document.getElementById('cal-titulo').value,
-                inicio: document.getElementById('cal-inicio').value,
-                fin: document.getElementById('cal-fin').value,
-                description: document.getElementById('cal-descripcion').value
-            };
-
-            fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(dataObj) })
-            .then(() => {
-                btn.disabled = false;
-                alert("📅 Cita enviada al Calendar.");
-                cerrarModalCalendar();
-            });
-        }
-
-        function actualizarDesplegableClientes() {
-            const selectNombre = document.getElementById('fact-nombre');
-            selectNombre.innerHTML = '<option value="">Seleccione un cliente...</option>';
-            datosTemporales.forEach(c => {
-                if(c.nombre) {
-                    const opt = document.createElement('option');
-                    opt.value = c.nombre;
-                    opt.textContent = c.nombre + (c.sucursal ? ` (${c.sucursal})` : '');
-                    selectNombre.appendChild(opt);
-                }
-            });
-        }
-
-        function autoRellenarDatosFactura(val) {
-            const c = datosTemporales.find(item => item.nombre === val);
-            if (c) {
-                document.getElementById('fact-cliente-id').value = c.consecutivo || '';
-                document.getElementById('fact-cedula').value = c.cedula || '';
-                document.getElementById('fact-detalle').value = "Servicio de Fumigación Profesional";
-            }
-        }
-
-        function asociarClienteAFactura(consecutivo) {
-            const c = datosTemporales.find(item => item.consecutivo == consecutivo);
-            if (!c) return;
-            actualizarDesplegableClientes();
-            document.getElementById('fact-nombre').value = c.nombre || '';
-            autoRellenarDatosFactura(c.nombre);
-            cambiarPestana('facturacion');
-        }
-
-        function calcularTotalesFactura() {
-            const cant = parseFloat(document.getElementById('fact-cantidad').value) || 1;
-            const sub = parseFloat(document.getElementById('fact-subtotal').value) || 0;
-            const imp = parseFloat(document.getElementById('fact-impuesto-porcentaje').value) || 0;
-            const total = (sub * cant) * (1 + (imp / 100));
-            document.getElementById('fact-total').value = total.toFixed(2);
-        }
-
-        function guardarFactura(event) {
-            event.preventDefault();
-            const status = document.getElementById('status-factura');
-            status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-blue-100 text-blue-800 block";
-            status.innerText = "⏳ Guardando factura...";
-
-            const cant = parseFloat(document.getElementById('fact-cantidad').value) || 1;
-            const sub = parseFloat(document.getElementById('fact-subtotal').value) || 0;
-            const impPct = parseFloat(document.getElementById('fact-impuesto-porcentaje').value) || 0;
-            const calcSub = sub * cant;
-            const calcImp = calcSub * (impPct / 100);
-            const totalFinal = document.getElementById('fact-total').value;
-
-            const tID = "FAC-" + Date.now().toString().slice(-6);
-            document.getElementById('pdf-num-factura').innerText = tID;
-            document.getElementById('pdf-fecha').innerText = new Date(document.getElementById('fact-fecha').value).toLocaleDateString();
-            document.getElementById('pdf-cliente-nombre').innerText = document.getElementById('fact-nombre').value;
-            document.getElementById('pdf-cliente-cedula').innerText = document.getElementById('fact-cedula').value;
-            document.getElementById('pdf-cliente-id').innerText = document.getElementById('fact-cliente-id').value;
-            document.getElementById('pdf-metodo-pago').innerText = document.getElementById('fact-metodo').value;
-            document.getElementById('pdf-tabla-cant').innerText = cant;
-            document.getElementById('pdf-tabla-detalle').innerText = document.getElementById('fact-detalle').value;
-            document.getElementById('pdf-tabla-precio').innerText = sub.toFixed(2);
-            document.getElementById('pdf-tabla-subtotal').innerText = calcSub.toFixed(2);
-            document.getElementById('pdf-resumen-subtotal').innerText = calcSub.toFixed(2);
-            document.getElementById('pdf-resumen-impuesto').innerText = calcImp.toFixed(2);
-            document.getElementById('pdf-resumen-total').innerText = totalFinal;
-
-            const dataObj = {
-                accion: "registrar_factura",
-                clienteId: document.getElementById('fact-cliente-id').value,
-                fechaFactura: document.getElementById('fact-fecha').value,
-                nombre: document.getElementById('fact-nombre').value,
-                cedula: document.getElementById('fact-cedula').value,
-                metodoPago: document.getElementById('fact-metodo').value,
-                cantidad: cant,
-                detalle: document.getElementById('fact-detalle').value,
-                subtotal: sub.toFixed(2),
-                impuesto: calcImp.toFixed(2),
-                total: totalFinal
-            };
-
-            fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(dataObj) })
-            .then(() => {
-                status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-green-100 text-green-800 block";
-                status.innerText = "✅ Guardada. Abriendo panel de impresión...";
-                document.getElementById('area-impresion-pdf').classList.remove('hidden');
-                setTimeout(() => {
-                    window.print();
-                    document.getElementById('area-impresion-pdf').classList.add('hidden');
-                    document.getElementById('form-factura').reset();
-                    document.getElementById('fact-fecha').valueAsDate = new Date();
-                }, 400);
-            });
-        }
-    </script>
 </body>
 </html>
