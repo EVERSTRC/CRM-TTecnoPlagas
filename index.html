@@ -1,312 +1,377 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TecnoPlagas Pro v24.2</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        :root { --primary: #1e272e; --accent: #05c46b; }
-        body { background: #f1f2f6; font-family: 'Segoe UI', sans-serif; font-size: 0.85rem; }
-        .card { border-radius: 10px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 20px; padding: 20px; background: #fff; }
-        .nav-link { color: #57606f; font-weight: bold; cursor: pointer; }
-        .nav-pills .nav-link.active { background-color: var(--primary); color: white !important; }
-        .form-label { font-weight: 700; font-size: 0.75rem; text-transform: uppercase; color: #57606f; margin-top: 5px; }
-        .readonly-cons { background: #fffaf0 !important; color: #ff4757; font-weight: bold; border: 1px solid #ff4757; }
-        .section-header { border-left: 4px solid var(--accent); padding-left: 10px; margin-bottom: 15px; font-weight: 800; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TecnoPlagas Pro v24.1</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+:root { --primary: #1e272e; --accent: #05c46b; }
+body { background: #f1f2f6; font-family: 'Segoe UI', sans-serif; font-size: 0.8rem; }
+.card { border-radius: 10px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; padding: 15px; }
+.nav-link { color: #57606f; font-weight: bold; cursor: pointer; }
+.nav-pills .nav-link.active { background-color: var(--primary); color: white !important; }
+.form-label { font-weight: 700; font-size: 0.7rem; text-transform: uppercase; color: #57606f; margin-top: 5px; }
+.readonly-cons { background: #fffaf0 !important; color: #ff4757; font-weight: bold; border: 1px solid #ff4757; }
+select[multiple] { height: 160px !important; font-size: 0.75rem; border: 2px solid #dfe4ea; }
+.btn-save { font-weight: 800; letter-spacing: 1px; }
+.section-header { border-left: 4px solid var(--accent); padding-left: 10px; margin-bottom: 15px; font-weight: 800; }
+</style>
 </head>
 <body>
 
 <div class="bg-white sticky-top shadow-sm p-2 mb-3">
-    <ul class="nav nav-pills justify-content-center" id="mainTabs">
-        <li class="nav-item"><a class="nav-link active" onclick="showTab('v-clientes', this)">CLIENTES</a></li>
-        <li class="nav-item"><a class="nav-link" onclick="showTab('v-cebaderos', this)">CEBADEROS</a></li>
-        <li class="nav-item"><a class="nav-link" onclick="showTab('v-visitas', this)">VISITAS</a></li>
-        <li class="nav-item"><a class="nav-link" onclick="showTab('v-factura', this)">FACTURACIÓN</a></li>
-    </ul>
+<ul class="nav nav-pills justify-content-center">
+<li class="nav-item"><a class="nav-link active" onclick="showTab('v-clientes', this)">CLIENTES</a></li>
+<li class="nav-item"><a class="nav-link" onclick="showTab('v-cebaderos', this)">CEBADEROS</a></li>
+<li class="nav-item"><a class="nav-link" onclick="showTab('v-visitas', this)">VISITAS</a></li>
+<li class="nav-item"><a class="nav-link" onclick="showTab('v-factura', this)">FACTURACIÓN</a></li>
+</ul>
 </div>
 
-<div class="container">
-    
-    <div id="v-clientes" class="tab-content">
-        <div class="card">
-            <h6 class="section-header">MAESTRO DE CLIENTES</h6>
-            <form id="formClientes" class="row g-2">
-                <div class="col-md-2">
-                    <label class="form-label">Consecutivo</label>
-                    <input type="text" id="c_con" class="form-control readonly-cons" placeholder="Auto" readonly>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Nombre Completo</label>
-                    <input type="text" id="c_nom" class="form-control" required>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Cédula / ID</label>
-                    <input type="text" id="c_id" class="form-control" required>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Sucursal</label>
-                    <input type="text" id="c_suc" class="form-control">
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Teléfono</label>
-                    <input type="tel" id="c_tel" class="form-control">
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Email</label>
-                    <input type="email" id="c_mail" class="form-control">
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Dirección Exacta</label>
-                    <input type="text" id="c_dir" class="form-control">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Coordenadas GPS</label>
-                    <input type="text" id="c_gps" class="form-control" placeholder="Lat, Lon">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label text-primary">Fecha Registro</label>
-                    <input type="date" id="c_freg" class="form-control" required>
-                </div>
-                <div class="col-12 mt-3">
-                    <button type="button" class="btn btn-dark w-100 fw-bold" onclick="guardarFormulario('Clientes', 'c')">GUARDAR CLIENTE</button>
-                </div>
-            </form>
-        </div>
-    </div>
+<div class="container-fluid">
 
-    <div id="v-cebaderos" class="tab-content d-none">
-        <div class="card">
-            <h6 class="section-header text-success">BASE DE DATOS CEBADEROS</h6>
-            <form id="formCebaderos" class="row g-2">
-                <div class="col-md-2"><label class="form-label">Consecutivo</label><input type="text" id="ceb_con" class="form-control readonly-cons" readonly></div>
-                <div class="col-md-6"><label class="form-label">Cliente</label><select id="ceb_nom" class="form-select select-clientes-lista"></select></div>
-                <div class="col-md-4"><label class="form-label">Sucursal</label><input type="text" id="ceb_suc" class="form-control"></div>
-                <div class="col-md-4"><label class="form-label">Fecha</label><input type="date" id="ceb_fec" class="form-control"></div>
-                <div class="col-md-4"><label class="form-label">Hora</label><input type="time" id="ceb_hor" class="form-control"></div>
-                <div class="col-md-4"><label class="form-label">Técnico</label><input type="text" id="ceb_tec" class="form-control"></div>
-                <div class="col-12 mt-3">
-                    <button type="button" class="btn btn-success w-100 fw-bold" onclick="alert('Funcionalidad de añadir estaciones en desarrollo estructural')">GUARDAR REPORTE CEBADEROS</button>
-                </div>
-            </form>
-        </div>
-    </div>
+<div id="v-clientes" class="tab-content">
+<div class="card">
+<h6 class="section-header">MAESTRO DE CLIENTES</h6>
+<div class="row g-2">
+<div class="col-md-2"><label class="form-label">A: Consecutivo</label><input type="text" id="c_con" class="form-control readonly-cons" readonly></div>
+<div class="col-md-7"><label class="form-label">B: Nombre Completo</label><input type="text" id="c_nom" class="form-control"></div>
+<div class="col-md-3"><label class="form-label">C: Id (Cédula)</label><input type="text" id="c_id" class="form-control"></div>
+<div class="col-md-4"><label class="form-label">D: Sucursal</label><input type="text" id="c_suc" class="form-control"></div>
+<div class="col-md-4"><label class="form-label">E: Teléfono Principal</label><input type="tel" id="c_tel" class="form-control"></div>
+<div class="col-md-4"><label class="form-label">F: Email</label><input type="email" id="c_mail" class="form-control"></div>
+<div class="col-md-3"><label class="form-label">G: Localizar</label><input type="text" id="c_loc" class="form-control"></div>
+<div class="col-md-3"><label class="form-label">H: Dirección</label><input type="text" id="c_dir" class="form-control"></div>
+<div class="col-md-3"><label class="form-label">I: GPS</label><input type="text" id="c_gps" class="form-control"></div>
+<div class="col-md-3"><label class="form-label text-primary">J: Fecha Reg</label><input type="date" id="c_freg" class="form-control"></div>
+</div>
+<button class="btn btn-primary btn-save w-100 mt-4" onclick="guardarGeneral('Clientes', 'c')">GUARDAR CLIENTE</button>
+</div>
+</div>
 
-    <div id="v-visitas" class="tab-content d-none">
-        <div class="card">
-            <h6 class="section-header text-warning">REGISTRO DE VISITAS TECNICAS</h6>
-            <form id="formVisitas" class="row g-2">
-                <div class="col-md-2"><label class="form-label">Consecutivo</label><input type="text" id="v_con" class="form-control readonly-cons" readonly></div>
-                <div class="col-md-6"><label class="form-label">Cliente</label><select id="v_nom" class="form-select select-clientes-lista"></select></div>
-                <div class="col-md-4"><label class="form-label">Sucursal</label><input type="text" id="v_suc" class="form-control"></div>
-                <div class="col-12 mt-3">
-                    <button type="button" class="btn btn-warning w-100 fw-bold" onclick="guardarFormulario('Visitas', 'v')">REGISTRAR VISITA</button>
-                </div>
-            </form>
-        </div>
-    </div>
+<div id="v-cebaderos" class="tab-content d-none">
+<div class="card">
+<h6 class="section-header text-success">BASE DE DATOS CEBADEROS</h6>
+<div class="row g-2 mb-3">
+<div class="col-md-2"><label class="form-label">Consecutivo</label><input type="text" id="ceb_con" class="form-control readonly-cons" readonly></div>
+<div class="col-md-6"><label class="form-label">Nombre Completo</label><select id="ceb_nom" class="form-select select-clientes"></select></div>
+<div class="col-md-4"><label class="form-label">Sucursal</label><input type="text" id="ceb_suc" class="form-control"></div>
+<div class="col-md-4"><label class="form-label">Fecha Visita</label><input type="date" id="ceb_fec" class="form-control"></div>
+<div class="col-md-4"><label class="form-label">Hora Visita</label><input type="time" id="ceb_hor" class="form-control"></div>
+<div class="col-md-4"><label class="form-label">Tipo de Visita</label><select id="ceb_tip" class="form-select"><option>Control de Plagas</option><option>Refuerzo</option></select></div>
+<div class="col-md-12"><label class="form-label">Tecnico</label><input type="text" id="ceb_tec" class="form-control"></div>
+</div>
 
-    <div id="v-factura" class="tab-content d-none">
-        <div class="card">
-            <h6 class="section-header text-info">MÓDULO DE FACTURACIÓN</h6>
-            <form id="formFacturacion" class="row g-2">
-                <div class="col-md-3">
-                    <label class="form-label">Número de Factura</label>
-                    <input type="text" id="f_con" class="form-control readonly-cons" placeholder="Auto" readonly>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label text-primary fw-bold">Nombre o Razón Social (Leído del Maestro)</label>
-                    <select id="f_nom" class="form-select select-clientes-lista" onchange="autoRellenarCamposFactura()"></select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">ID / Cédula Cliente</label>
-                    <input type="text" id="f_id" class="form-control" readonly>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Fecha Emisión</label>
-                    <input type="date" id="f_fec" class="form-control">
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Método de Pago</label>
-                    <select id="f_med" class="form-select">
-                        <option>Sinpe</option>
-                        <option>Efectivo</option>
-                        <option>Transferencia</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Tipo Factura</label>
-                    <select id="f_tip" class="form-select">
-                        <option>Contado</option>
-                        <option>Crédito</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Teléfono Contacto</label>
-                    <input type="text" id="f_tel" class="form-control" readonly>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Lugar de Servicio</label>
-                    <input type="text" id="f_lug" class="form-control">
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Dirección de Envío</label>
-                    <input type="text" id="f_dir" class="form-control" readonly>
-                </div>
-                
-                <hr class="my-3">
-                
-                <div class="col-md-2">
-                    <label class="form-label">Cantidad</label>
-                    <input type="number" id="f_can" class="form-control" value="1" oninput="calcularMontosFactura()">
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Precio Unitario (₡)</label>
-                    <input type="number" id="f_pre" class="form-control" placeholder="0.00" oninput="calcularMontosFactura()">
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Subtotal</label>
-                    <input type="text" id="f_sub" class="form-control bg-light" readonly>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">IVA (13%)</label>
-                    <input type="text" id="f_iva" class="form-control bg-light" readonly>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label text-danger fw-bold">TOTAL FACTURA</label>
-                    <input type="text" id="f_tot" class="form-control fw-bold bg-warning-subtle" readonly>
-                </div>
-                
-                <div class="col-12 mt-4">
-                    <button type="button" class="btn btn-info w-100 fw-bold text-white" onclick="guardarFormulario('Facturacion', 'f')">REGISTRAR FACTURACIÓN</button>
-                </div>
-            </form>
-        </div>
-    </div>
+<div class="bg-light p-3 rounded border">
+<div class="row g-2">
+<div class="col-md-2"><label class="form-label">Estación #</label><input type="text" id="i_est" class="form-control"></div>
+<div class="col-md-5"><label class="form-label">Producto Utilizado</label>
+<select id="i_pro" class="form-select">
+<option>(Rodenticida-Broditop-Brodifacoum-20-30g / m)</option>
+<option>(Rodenticida-Gardentop-Bromadiolona-20-30g / m)</option>
+<option>(Rodenticida-Storm-Coumarin Flocoumafen-20-30g / m)</option>
+<option>(Rodenticida-Ratolí-Bromadiolona-20-30g / m)</option>
+<option>(Rodenticida-Muskill Forablock-Coumarina-Difenacoum-Bromadiolona-20-30g / m)</option>
+</select>
+</div>
+<div class="col-md-5"><label class="form-label">Tipo de Incidencia</label>
+<select id="i_inc" class="form-select">
+<option>Instalación-Colocación de Cebo-Rotulación</option>
+<option>Limpieza-Cambio Cebo</option>
+<option>Limpieza-Cambio Cebo-Cebo Vencido</option>
+<option>Limpieza-Cambio Cebo-Estación Inactiva</option>
+<option>Limpieza-Cambio Cebo-Estación Activa</option>
+<option>Instalación Plancha de Goma</option>
+<option>Instalación trampa Mecánica</option>
+<option>Activa</option>
+<option>Inactiva</option>
+<option>Cebo Vencido</option>
+<option>Cambio de cebo</option>
+<option>Reubicación</option>
+<option>Rotulación</option>
+</select>
+</div>
+<div class="col-md-12 mt-2"><label class="form-label">Comentario</label><input type="text" id="i_com" class="form-control"></div>
+<div class="col-md-12 mt-2"><button class="btn btn-success w-100" onclick="addEstacion()">AÑADIR ESTACIÓN A LISTA</button></div>
+</div>
+</div>
+
+<table class="table table-sm mt-3"><thead><tr class="table-dark"><th>Est.</th><th>Producto</th><th>Incidencia</th><th>X</th></tr></thead><tbody id="lista_estaciones"></tbody></table>
+<button class="btn btn-success btn-save w-100 mt-2" onclick="guardarCebaderos()">GUARDAR REPORTE CEBADEROS</button>
+</div>
+</div>
+
+<div id="v-visitas" class="tab-content d-none">
+<div class="card">
+<h6 class="section-header text-warning">BASE DE DATOS VISITAS</h6>
+<div class="row g-2">
+<div class="col-md-2"><label class="form-label">Consecutivo</label><input type="text" id="v_con" class="form-control readonly-cons" readonly></div>
+<div class="col-md-6"><label class="form-label">Nombre Completo</label><select id="v_nom" class="form-select select-clientes"></select></div>
+<div class="col-md-4"><label class="form-label">Sucursal</label><input type="text" id="v_suc" class="form-control"></div>
+<div class="col-md-3"><label class="form-label">Fecha Visita</label><input type="date" id="v_fec" class="form-control"></div>
+<div class="col-md-3"><label class="form-label">Hora Visita</label><input type="time" id="v_hor" class="form-control"></div>
+<div class="col-md-3"><label class="form-label">Tipo de Visita</label><input type="text" id="v_tip" class="form-control"></div>
+<div class="col-md-3"><label class="form-label">Tecnico</label><input type="text" id="v_tec" class="form-control"></div>
+
+<div class="col-md-3"><label class="form-label text-danger">Insectos Rastreros</label>
+<select id="v_ras" class="form-select" multiple>
+<option>NINGUNO</option><option>ÁCAROS</option><option>ALACRANES</option><option>ARAÑAS</option><option>CHINCHES</option>
+<option>PESC DE PLATA</option><option>PIOJOS</option><option>TERMITAS</option><option>C GERMÁNICA</option><option>ESCARABAJOS</option>
+<option>GARRAPATAS</option><option>GORGOJOS</option><option>HORMIGAS</option><option>COMEJÉN</option><option>PULGAS</option>
+<option>TIJERETAS</option><option>C AMERICANA</option>
+</select>
+</div>
+
+<div class="col-md-3"><label class="form-label text-primary">Insectos Voladores</label>
+<select id="v_vol" class="form-select" multiple>
+<option>NINGUNO</option><option>ABEJAS</option><option>AVISPAS</option><option>MOSQUITOS</option><option>POLILLAS</option>
+<option>MOSCAS</option><option>ZANCUDOS</option>
+</select>
+</div>
+
+<div class="col-md-3"><label class="form-label text-dark">Roedores</label>
+<select id="v_roe" class="form-select" multiple>
+<option>NINGUNO</option><option>RATONES</option><option>RATAS</option><option>MURCIÉLAGOS</option>
+</select>
+</div>
+
+<div class="col-md-3"><label class="form-label text-secondary">Otros</label>
+<select id="v_otr" class="form-select" multiple>
+<option>NINGUNO</option><option>AVES</option><option>SERPIENTES</option><option>OTROS</option>
+</select>
+</div>
+
+<div class="col-md-6 mt-3"><label class="form-label">Método de Aplicación</label>
+<select id="v_met" class="form-select" multiple>
+<option>Método Aplicación - Aspersión</option><option>Metodo Aplicacion - Termonebulización</option>
+<option>Método Aplicación - Nebulización en frío</option><option>Metodo Aplicacion - Lami gomosa</option>
+<option>Metodo Aplicacion - Prod granulado</option><option>Metodo Aplicacion - Cebo para roedores</option>
+<option>Metodo Aplicacion - Trampa mecánica</option><option>Metodo Aplicacion - Aplic de prod en gel</option>
+<option>Metodo Aplicacion - Aplic de Gas Fumígeno</option><option>Metodo Aplicacion - Aplic de prod en Polvo</option>
+</select>
+</div>
+
+<div class="col-md-6 mt-3"><label class="form-label">Producto Aplicado</label>
+<select id="v_pro" class="form-select" multiple>
+<option>(Plaguicida-Biflex-Bifentrina-1-3 ml/L)</option><option>(Plaguicida-Cynoff CE-Cipermetrina-5-10 ml/L)</option>
+<option>(Plaguicida-Cybor-Cipermetrina-10-20 ml/L)</option><option>(Plaguicida-EKOSET EC-Permetrina + Tetrametrina + Butóxido De Piperonilo-10 a 20 ml/L)</option>
+<option>(Plaguicida-Fingen -Cipermetrina + Acetamiprid-10 a 20 ml/L)</option><option>(Plaguicida-Deltaforte-Deltametrina-16 a 30 ml/L)</option>
+<option>(Plaguicida-K-Othrine-Deltametrma-8 ml/L)</option><option>(Plaguicida-FenvaStar Plus -Esfenvarelato -3,2 a 6,3 ml/L)</option>
+<option>(Plaguicida-Premise-Imidacloprid-2.5-5 ml/L)</option><option>(Plaguicida-Quick Bayt-Imidacloprid-2 g/m2)</option>
+<option>(Plaguicida-Temprid-Imidacloprid-1 ml/L)</option><option>(Plaguicida-Guru-Lambda Cyalotrina-10-20 ml/L)</option>
+<option>(Plaguicida-Lamddastar-Lambda-cihalotrina -1,6 a 3,2 ml/L)</option><option>(Plaguicida-Aqua Reslin-Permetrina-20 a 100 ml/L)</option>
+<option>(Plaguicida-Dragnet-Permetrina-12.5-25 ml/L)</option><option>(Plaguicida-Fumytrol-Permetrina-1 / 500 m3)</option>
+<option>(Plaguicida-Dragon Max-Permetrina-10 a 15 ml/L)</option><option>(Plaguicida-Pybuthrin 33-Piretrinas-1L / 20 a 40 m2)</option>
+<option>(Plaguicida-Riptide SENASA-Piretrinas-1L / 20 a 40 m3)</option><option>(Plaguicida-Chemotrina-Praletrina-10 a 15 ml/L)</option>
+<option>(Plaguicida-Perfeno-Propoxur-11 a 15 ml/L)</option><option>(Plaguicida-Agita 10g/l.-Tiametoxam-10g/l.)</option>
+<option>(Plaguicida-Invict Gold Gel -Imidacloprid-1 a 6 Puntos /m2)</option><option>(Plaguicida-Invict AB Gel-Abamectina-2 a 6 Puntos /m2)</option>
+<option>(Plaguicida-Blatanex UL Gel-Imidacloprid-0.05 a 1g./m2)</option><option>(Plaguicida-Antex Gel-Abamectina-1 punto/m2)</option>
+<option>(Plaguicida-Sangha Gel-Abamectina-2 punto/m2)</option><option>(Rodenticida-Broditop-Brodifacoum-20-30g / m)</option>
+<option>(Rodenticida-Rodilon Pellet-Difetialona-20-30g / m)</option><option>(Rodenticida-Gardentop-Bromadiolona-20-30g / m)</option>
+<option>(Rodenticida-Storm-Coumarin Flocoumafen-20-30g / m)</option><option>(Rodenticida-Ratolí-Bromadiolona-20-30g / m)</option>
+<option>(Rodenticida-Muskill Forablock-Coumarina-Difenacoum-Bromadiolona-20-30g / m)</option>
+</select>
+</div>
+
+<div class="col-md-6"><label class="form-label">Áreas Fumigadas</label><input type="text" id="v_afu" class="form-control"></div>
+<div class="col-md-6"><label class="form-label">Áreas no Fumigadas</label><input type="text" id="v_anf" class="form-control"></div>
+<div class="col-12"><label class="form-label">Comentario</label><textarea id="v_com" class="form-control" rows="2"></textarea></div>
+</div>
+<button class="btn btn-warning btn-save w-100 mt-4 fw-bold" onclick="guardarGeneral('Visitas', 'v')">GUARDAR VISITA</button>
+</div>
+</div>
+
+<div id="v-factura" class="tab-content d-none">
+<div class="card">
+<h6 class="section-header text-info">BASE DE DATOS FACTURACIÓN</h6>
+<div class="row g-2">
+<div class="col-md-3"><label class="form-label">Número de Factura</label><input type="text" id="f_con" class="form-control readonly-cons" readonly></div>
+<div class="col-md-6"><label class="form-label">Nombre del Cliente</label><select id="f_nom" class="form-select select-clientes" onchange="autoFillFact()"></select></div>
+<div class="col-md-3"><label class="form-label">ID Cliente</label><input type="text" id="f_id" class="form-control" readonly></div>
+<div class="col-md-4"><label class="form-label">Fecha Factura</label><input type="date" id="f_fec" class="form-control"></div>
+<div class="col-md-4"><label class="form-label">Medio de Pago</label><select id="f_med" class="form-select"><option>Sinpe</option><option>Efectivo</option><option>Transferencia</option></select></div>
+<div class="col-md-4"><label class="form-label">Tipo de Factura</label><select id="f_tip" class="form-select"><option>Contado</option><option>Crédito</option></select></div>
+<div class="col-md-6"><label class="form-label">Teléfono</label><input type="text" id="f_tel" class="form-control" readonly></div>
+<div class="col-md-6"><label class="form-label">Lugar</label><input type="text" id="f_lug" class="form-control"></div>
+<div class="col-md-12"><label class="form-label">Dirección</label><input type="text" id="f_dir" class="form-control" readonly></div>
+<div class="col-md-3"><label class="form-label">Cantidad</label><input type="number" id="f_can" class="form-control" value="1" oninput="calcTotal()"></div>
+<div class="col-md-3"><label class="form-label">Precio Unitario</label><input type="number" id="f_pre" class="form-control" oninput="calcTotal()"></div>
+<div class="col-md-2"><label class="form-label">IVA (13%)</label><input type="text" id="f_iva" class="form-control" readonly></div>
+<div class="col-md-2"><label class="form-label">Sub Total</label><input type="text" id="f_sub" class="form-control" readonly></div>
+<div class="col-md-2"><label class="form-label text-primary fw-bold">TOTAL</label><input type="text" id="f_tot" class="form-control fw-bold bg-light" readonly></div>
+</div>
+<button class="btn btn-info btn-save w-100 mt-4 text-white" onclick="guardarGeneral('Facturacion', 'f')">REGISTRAR FACTURACIÓN</button>
+</div>
+</div>
 
 </div>
 
 <script>
-    // URL Única de Conexión de Google Apps Script suministrada
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx3l9ZT-P3takIBvyk5YJ7aP7gVskOLeym57Slm4ekgM1ypi-BeQAqg9JYzrb23Zlno/exec";
-    let baseClientes = [];
+// URL Vinculada de tu Google Apps Script activa
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx3l9ZT-P3takIBvyk5YJ7aP7gVskOLeym57Slm4ekgM1ypi-BeQAqg9JYzrb23Zlno/exec";
+let estacionesTemp = [];
 
-    // Cambiar dinámicamente entre pestañas
-    function showTab(tabId, el) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.add('d-none'));
-        document.getElementById(tabId).classList.remove('d-none');
-        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-        el.classList.add('active');
-    }
+function showTab(id, link) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('d-none'));
+    document.getElementById(id).classList.remove('d-none');
+    document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+    link.classList.add('active');
+}
 
-    // Cargar la base de clientes desde Google Sheets en tiempo real
-    function precargarClientesMaster() {
-        console.log("Conectando con Google Sheets para descargar maestro de clientes...");
-        
-        fetch(SCRIPT_URL)
-            .then(res => {
-                if (!res.ok) throw new Error("Error en respuesta HTTP.");
-                return res.json();
-            })
-            .then(data => {
-                baseClientes = data;
-                console.log("Clientes cargados:", baseClientes.length);
-                
-                // Buscar todos los selectores de cliente del documento
-                const selectores = document.querySelectorAll('.select-clientes-lista');
-                selectores.forEach(select => {
-                    select.innerHTML = '<option value="">Seleccione un cliente de la lista...</option>';
-                    data.forEach(c => {
-                        let op = document.createElement('option');
-                        op.value = c.nombre;
-                        op.textContent = c.nombre;
-                        // Metadatos ocultos para auto-rellenar campos derivados
-                        op.dataset.cedula = c.id;
-                        op.dataset.telefono = c.tel;
-                        op.dataset.direccion = c.dir;
-                        op.dataset.sucursal = c.suc;
-                        select.appendChild(op);
-                    });
+// CORRECCIÓN CLAVE: Carga de Clientes mapeando correctamente la Columna B
+function cargarClientes() {
+    fetch(SCRIPT_URL)
+        .then(res => res.json())
+        .then(data => {
+            const selectores = document.querySelectorAll(".select-clientes");
+            selectores.forEach(select => {
+                select.innerHTML = '<option value="">Seleccione un cliente...</option>';
+                data.forEach(c => {
+                    let option = document.createElement("option");
+                    option.value = c.nombre; // Columna B de tu tabla (Nombre Completo)
+                    option.textContent = c.nombre;
+                    // Guardamos metadatos adicionales para el auto-relleno automático
+                    option.dataset.cedula = c.id || "";
+                    option.dataset.telefono = c.tel || "";
+                    option.dataset.direccion = c.loc || "";
+                    option.dataset.sucursal = c.suc || "";
+                    select.appendChild(option);
                 });
-            })
-            .catch(err => {
-                console.error("Fallo crítico al sincronizar clientes:", err);
-                alert("Error de conexión o permisos en Google Script. Asegúrese de que la App de Google esté pública para 'Cualquiera'.");
             });
-    }
+        })
+        .catch(err => console.error("Error cargando maestro de clientes:", err));
+}
 
-    // Auto-rellenar campos en la factura en base al cliente seleccionado
-    function autoRellenarCamposFactura() {
-        const selector = document.getElementById("f_nom");
-        const opcion = selector.options[selector.selectedIndex];
-        
-        if(opcion && opcion.value !== "") {
-            document.getElementById("f_id").value = opcion.dataset.cedula || "";
-            document.getElementById("f_tel").value = opcion.dataset.telefono || "";
-            document.getElementById("f_dir").value = opcion.dataset.direccion || "";
-            document.getElementById("f_lug").value = opcion.dataset.sucursal || "";
-        } else {
-            document.getElementById("f_id").value = "";
-            document.getElementById("f_tel").value = "";
-            document.getElementById("f_dir").value = "";
-            document.getElementById("f_lug").value = "";
+// Auto-relleno inteligente al cambiar de cliente en Facturación
+function autoFillFact() {
+    const sel = document.getElementById("f_nom");
+    const opt = sel.options[sel.selectedIndex];
+    if(opt && opt.value !== "") {
+        document.getElementById("f_id").value = opt.dataset.cedula;
+        document.getElementById("f_tel").value = opt.dataset.telefono;
+        document.getElementById("f_dir").value = opt.dataset.direccion;
+        document.getElementById("f_lug").value = opt.dataset.sucursal;
+    } else {
+        document.getElementById("f_id").value = "";
+        document.getElementById("f_tel").value = "";
+        document.getElementById("f_dir").value = "";
+        document.getElementById("f_lug").value = "";
+    }
+}
+
+function calcTotal() {
+    let cant = parseFloat(document.getElementById("f_can").value) || 0;
+    let pre = parseFloat(document.getElementById("f_pre").value) || 0;
+    let sub = cant * pre;
+    let iva = sub * 0.13;
+    let tot = sub + iva;
+    document.getElementById("f_sub").value = sub.toFixed(2);
+    document.getElementById("f_iva").value = iva.toFixed(2);
+    document.getElementById("f_tot").value = tot.toFixed(2);
+}
+
+function addEstacion() {
+    let num = document.getElementById("i_est").value;
+    let pro = document.getElementById("i_pro").value;
+    let inc = document.getElementById("i_inc").value;
+    let com = document.getElementById("i_com").value;
+    if(!num) return alert("Número de estación requerido");
+    estacionesTemp.push({num, pro, inc, com});
+    renderEstaciones();
+    document.getElementById("i_est").value = "";
+    document.getElementById("i_com").value = "";
+}
+
+function renderEstaciones() {
+    let tbody = document.getElementById("lista_estaciones");
+    tbody.innerHTML = "";
+    estacionesTemp.forEach((e, idx) => {
+        tbody.innerHTML += `<tr><td>${e.num}</td><td>${e.pro}</td><td>${e.inc}</td><td><button class='btn btn-danger btn-sm' onclick='removeEstacion(${idx})'>X</button></td></tr>`;
+    });
+}
+
+function removeEstacion(idx) {
+    estacionesTemp.splice(idx, 1);
+    renderEstaciones();
+}
+
+function getSelectValues(select) {
+    var result = [];
+    var options = select && select.options;
+    var opt;
+    for (var i=0, iLen=options.length; i<iLen; i++) {
+        opt = options[i];
+        if (opt.selected) {
+            result.push(opt.value || opt.text);
         }
     }
+    return result.join(", ");
+}
 
-    // Cálculos matemáticos en la pestaña de facturas
-    function calcularMontosFactura() {
-        const cant = parseFloat(document.getElementById("f_can").value) || 0;
-        const precio = parseFloat(document.getElementById("f_pre").value) || 0;
-        
-        const subtotal = cant * precio;
-        const iva = subtotal * 0.13;
-        const total = subtotal + iva;
-        
-        document.getElementById("f_sub").value = subtotal.toFixed(2);
-        document.getElementById("f_iva").value = iva.toFixed(2);
-        document.getElementById("f_tot").value = total.toFixed(2);
-    }
-
-    // Función Universal de Envío (Clientes, Visitas, Facturación)
-    function guardarFormulario(pestana, prefijo) {
-        const form = document.getElementById(`form${pestana === 'Facturacion' ? 'Facturacion' : pestana}`);
-        
-        // Empaquetar dinámicamente los datos de los inputs del formulario
-        let datos = {};
-        const inputs = form.querySelectorAll("input, select, textarea");
-        inputs.forEach(i => {
-            if(i.id) datos[i.id] = i.value;
-        });
-
-        // Enviar a Apps Script mediante POST JSON estructurado
-        fetch(SCRIPT_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ pestana: pestana, datos: datos })
-        })
-        .then(() => {
-            alert(`¡Registro en '${pestana}' guardado exitosamente en Google Sheets!`);
-            form.reset();
-            if(pestana === "Clientes") precargarClientesMaster(); // Refrescar listas inmediatamente
-        })
-        .catch(err => {
-            console.error("Error al guardar:", err);
-            alert("No se pudo conectar a la base de datos.");
-        });
-    }
-
-    // Inicialización automática de la App al cargar el DOM
-    document.addEventListener("DOMContentLoaded", () => {
-        // Fijar fecha de hoy automáticamente por defecto en registros
-        const hoy = new Date().toISOString().split('T')[0];
-        if(document.getElementById("c_freg")) document.getElementById("c_freg").value = hoy;
-        if(document.getElementById("f_fec")) document.getElementById("f_fec").value = hoy;
-        
-        precargarClientesMaster();
+function guardarGeneral(pestana, prefijo) {
+    let datos = {};
+    // Captura inputs estándar de texto, número, fecha
+    let inputs = document.querySelectorAll(`[id^="${prefijo}_"]`);
+    inputs.forEach(i => {
+        if(i.tagName === "SELECT" && i.multiple) {
+            datos[i.id] = getSelectValues(i);
+        } else {
+            datos[i.id] = i.value;
+        }
     });
-</script>
 
+    fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({pestana: pestana, datos: datos})
+    })
+    .then(() => {
+        alert("Registro procesado correctamente");
+        inputs.forEach(i => { if(i.id !== `${prefijo}_con`) i.value = ""; });
+        if(pestana === "Clientes") cargarClientes();
+    })
+    .catch(err => alert("Error al guardar: " + err));
+}
+
+function guardarCebaderos() {
+    let datos = {
+        ceb_con: document.getElementById("ceb_con").value,
+        ceb_nom: document.getElementById("ceb_nom").value,
+        ceb_suc: document.getElementById("ceb_suc").value,
+        ceb_fec: document.getElementById("ceb_fec").value,
+        ceb_hor: document.getElementById("ceb_hor").value,
+        ceb_tip: document.getElementById("ceb_tip").value,
+        ceb_tec: document.getElementById("ceb_tec").value,
+        estaciones: JSON.stringify(estacionesTemp)
+    };
+    fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({pestana: "Cebaderos", datos: datos})
+    })
+    .then(() => {
+        alert("Reporte de cebaderos guardado con éxito");
+        estacionesTemp = [];
+        renderEstaciones();
+        document.getElementById("ceb_suc").value = "";
+    })
+    .catch(err => alert("Error: " + err));
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Establecer fechas actuales por defecto
+    let hoy = new Date().toISOString().split('T')[0];
+    if(document.getElementById("c_freg")) document.getElementById("c_freg").value = hoy;
+    if(document.getElementById("ceb_fec")) document.getElementById("ceb_fec").value = hoy;
+    if(document.getElementById("v_fec")) document.getElementById("v_fec").value = hoy;
+    if(document.getElementById("f_fec")) document.getElementById("f_fec").value = hoy;
+    
+    // Ejecuta la lectura inicial de clientes
+    cargarClientes();
+});
+</script>
 </body>
 </html>
