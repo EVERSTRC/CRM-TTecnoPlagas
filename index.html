@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TecnoPlagas Pro v24.1</title>
+<title>TecnoPlagas Pro v24.3</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
 :root { --primary: #1e272e; --accent: #05c46b; }
@@ -208,7 +208,7 @@ select[multiple] { height: 160px !important; font-size: 0.75rem; border: 2px sol
 </div>
 
 <script>
-// URL Vinculada de tu Google Apps Script activa
+// URL de tu API en Google Apps Script
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx3l9ZT-P3takIBvyk5YJ7aP7gVskOLeym57Slm4ekgM1ypi-BeQAqg9JYzrb23Zlno/exec";
 let estacionesTemp = [];
 
@@ -219,7 +219,7 @@ function showTab(id, link) {
     link.classList.add('active');
 }
 
-// CORRECCIÓN CLAVE: Carga de Clientes mapeando correctamente la Columna B
+// Carga de Clientes mapeando correctamente la Columna B
 function cargarClientes() {
     fetch(SCRIPT_URL)
         .then(res => res.json())
@@ -229,9 +229,9 @@ function cargarClientes() {
                 select.innerHTML = '<option value="">Seleccione un cliente...</option>';
                 data.forEach(c => {
                     let option = document.createElement("option");
-                    option.value = c.nombre; // Columna B de tu tabla (Nombre Completo)
+                    option.value = c.nombre; // Columna B (Nombre Completo)
                     option.textContent = c.nombre;
-                    // Guardamos metadatos adicionales para el auto-relleno automático
+                    // Guardamos metadatos adicionales en el DOM
                     option.dataset.cedula = c.id || "";
                     option.dataset.telefono = c.tel || "";
                     option.dataset.direccion = c.loc || "";
@@ -311,7 +311,6 @@ function getSelectValues(select) {
 
 function guardarGeneral(pestana, prefijo) {
     let datos = {};
-    // Captura inputs estándar de texto, número, fecha
     let inputs = document.querySelectorAll(`[id^="${prefijo}_"]`);
     inputs.forEach(i => {
         if(i.tagName === "SELECT" && i.multiple) {
@@ -328,7 +327,7 @@ function guardarGeneral(pestana, prefijo) {
         body: JSON.stringify({pestana: pestana, datos: datos})
     })
     .then(() => {
-        alert("Registro procesado correctamente");
+        alert("Registro procesado e ingresado correctamente");
         inputs.forEach(i => { if(i.id !== `${prefijo}_con`) i.value = ""; });
         if(pestana === "Clientes") cargarClientes();
     })
@@ -362,14 +361,12 @@ function guardarCebaderos() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Establecer fechas actuales por defecto
     let hoy = new Date().toISOString().split('T')[0];
     if(document.getElementById("c_freg")) document.getElementById("c_freg").value = hoy;
     if(document.getElementById("ceb_fec")) document.getElementById("ceb_fec").value = hoy;
     if(document.getElementById("v_fec")) document.getElementById("v_fec").value = hoy;
     if(document.getElementById("f_fec")) document.getElementById("f_fec").value = hoy;
     
-    // Ejecuta la lectura inicial de clientes
     cargarClientes();
 });
 </script>
