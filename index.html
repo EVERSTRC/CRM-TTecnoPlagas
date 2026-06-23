@@ -8,6 +8,15 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1d4ed8">
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilos específicos para que el PDF se imprima impecable y sin menús */
+        @media print {
+            body * { visibility: hidden; }
+            #area-impresion-pdf, #area-impresion-pdf * { visibility: visible; }
+            #area-impresion-pdf { position: absolute; left: 0; top: 0; width: 100%; }
+            header, main, nav, button, form, .fixed { display: none !important; }
+        }
+    </style>
 </head>
 <body class="bg-gray-100 font-sans min-h-screen flex flex-col">
 
@@ -15,8 +24,9 @@
         <div class="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
             <h1 class="text-xl font-bold tracking-wide">🕷️ Gestión de Fumigaciones y Agenda</h1>
             <nav class="flex space-x-2">
-                <button id="btn-registro" class="px-4 py-2 rounded bg-blue-900 font-semibold transition" onclick="cambiarPestana('registro')">Nuevo Registro</button>
-                <button id="btn-consulta" class="px-4 py-2 rounded hover:bg-blue-600 font-semibold transition" onclick="cambiarPestana('consulta')">Consultar Clientes / Citas</button>
+                <button id="btn-registro" class="px-3 py-2 rounded bg-blue-900 font-semibold transition" onclick="cambiarPestana('registro')">Nuevo Registro</button>
+                <button id="btn-consulta" class="px-3 py-2 rounded hover:bg-blue-600 font-semibold transition" onclick="cambiarPestana('consulta')">Consultar Clientes</button>
+                <button id="btn-facturacion" class="px-3 py-2 rounded hover:bg-blue-600 font-semibold transition" onclick="cambiarPestana('facturacion')">🧾 Facturación</button>
             </nav>
         </div>
     </header>
@@ -121,7 +131,123 @@
                 </table>
             </div>
         </div>
+
+        <!-- PESTAÑA 3: SISTEMA DE FACTURACIÓN -->
+        <div id="vista-facturacion" class="bg-white p-6 rounded-xl shadow-md border border-gray-200 hidden">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">🧾 Emitir Factura de Servicio</h2>
+            <form id="form-factura" onsubmit="guardarFactura(event)">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">N° Factura</label>
+                        <input type="text" id="fact-numero" value="Automático" readonly class="w-full p-2 border rounded-lg bg-gray-100 text-gray-500 font-bold outline-none cursor-not-allowed">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Consecutivo Cliente (Asociado)</label>
+                        <input type="text" id="fact-cliente-id" placeholder="Opcional / Automático" class="w-full p-2 border rounded-lg bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Fecha Emisión *</label>
+                        <input type="date" id="fact-fecha" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Nombre / Razón Social *</label>
+                        <input type="text" id="fact-nombre" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Cédula Física o Jurídica *</label>
+                        <input type="text" id="fact-cedula" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Método de Pago *</label>
+                        <select id="fact-metodo" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                            <option value="Efectivo">Efectivo</option>
+                            <option value="Transferencia">Transferencia Bancaria</option>
+                            <option value="Sinpe Movil">Sinpe Móvil</option>
+                            <option value="Tarjeta">Tarjeta de Crédito/Débito</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    <div class="md:col-span-1">
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Cantidad *</label>
+                        <input type="number" id="fact-cantidad" value="1" min="1" required oninput="calcularTotalesFactura()" class="w-full p-2 border rounded-lg font-bold text-gray-800 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="md:col-span-3">
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Detalle del Servicio Realizado *</label>
+                        <textarea id="fact-detalle" required rows="1" placeholder="Ej: Servicio de fumigación..." class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4 bg-gray-50 p-4 rounded-xl">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Precio Unitario Subtotal *</label>
+                        <input type="number" step="0.01" id="fact-subtotal" required oninput="calcularTotalesFactura()" placeholder="0.00" class="w-full p-2 border rounded-lg font-bold text-gray-800 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Impuesto (Opcional %)</label>
+                        <input type="number" step="0.01" id="fact-impuesto-porcentaje" value="0" oninput="calcularTotalesFactura()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-blue-700 text-sm font-bold mb-1">Total Neto (Cant × Subt + Imp)</label>
+                        <input type="text" id="fact-total" value="0.00" readonly class="w-full p-2 border border-blue-300 rounded-lg bg-blue-100 text-blue-800 font-black text-lg outline-none cursor-not-allowed">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-emerald-600 text-white p-3 rounded-lg font-bold hover:bg-emerald-700 transition shadow-lg text-lg mt-6">🧾 Guardar y Generar PDF</button>
+            </form>
+            <div id="status-factura" class="mt-4 hidden text-center font-semibold p-3 rounded-lg"></div>
+        </div>
     </main>
+
+    <!-- ÁREA OCULTA PARA EL FORMATO DE IMPRESIÓN DEL PDF (TICKET PROFESIONAL) -->
+    <div id="area-impresion-pdf" class="hidden p-8 max-w-xl mx-auto bg-white text-gray-800 font-mono text-sm leading-relaxed">
+        <div class="text-center border-b-2 border-dashed pb-4 mb-4">
+            <h2 class="text-xl font-bold uppercase tracking-wider">🪰 Control de Plagas Profesionales</h2>
+            <p class="text-xs">Servicios Especializados de Fumigación y Desinfección</p>
+            <p class="text-xs mt-1">Tel: +506 8888-8888 | info@fumigaciones.com</p>
+        </div>
+        <div class="mb-4">
+            <div class="flex justify-between font-bold text-base">
+                <span>COMPROBANTE DE FACTURA</span>
+                <span id="pdf-num-factura">FAC-TEMP</span>
+            </div>
+            <p class="mt-2"><strong>Fecha Emisión:</strong> <span id="pdf-fecha"></span></p>
+            <p><strong>Cliente:</strong> <span id="pdf-cliente-nombre"></span></p>
+            <p><strong>Identificación/Cédula:</strong> <span id="pdf-cliente-cedula"></span></p>
+            <p><strong>ID Cliente:</strong> #<span id="pdf-cliente-id"></span></p>
+        </div>
+        <table class="w-full text-left border-t border-b border-dashed my-4 py-2">
+            <thead>
+                <tr class="font-bold">
+                    <th class="w-12 py-1">Cant</th>
+                    <th class="py-1">Descripción</th>
+                    <th class="text-right w-24 py-1">Precio Un.</th>
+                    <th class="text-right w-24 py-1">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="align-top">
+                    <td id="pdf-tabla-cant" class="py-1">1</td>
+                    <td id="pdf-tabla-detalle" class="py-1 pr-2">Servicio Estándar</td>
+                    <td id="pdf-tabla-precio" class="text-right py-1">0.00</td>
+                    <td id="pdf-tabla-subtotal" class="text-right py-1">0.00</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="w-1/2 ml-auto text-right space-y-1">
+            <p><strong>Subtotal:</strong> <span id="pdf-resumen-subtotal">0.00</span></p>
+            <p><strong>Impuestos:</strong> <span id="pdf-resumen-impuesto">0.00</span></p>
+            <div class="border-t border-dashed pt-1 text-base font-bold text-gray-900">
+                <span>Total: <span id="pdf-resumen-total">0.00</span></span>
+            </div>
+        </div>
+        <div class="mt-6 border-t-2 border-dashed pt-4 text-center text-xs">
+            <p><strong>Método de Pago:</strong> <span id="pdf-metodo-pago"></span></p>
+            <p class="mt-3 font-bold">¡Gracias por confiar en nuestra gestión de control de plagas!</p>
+            <p class="text-gray-400 mt-1">Este documento es un comprobante válido de servicio.</p>
+        </div>
+    </div>
 
     <!-- MODAL 1: EDITAR REGISTRO -->
     <div id="modal-editar" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden p-4">
@@ -219,7 +345,6 @@
                     </div>
                 </div>
                 
-                <!-- CAMPO RESTAURADO: MONTO A FACTURAR -->
                 <div class="mb-3">
                     <label class="block text-gray-700 text-sm font-semibold mb-1">Monto a Facturar</label>
                     <input type="text" id="cal-monto" oninput="actualizarDetalleDinamico()" placeholder="Ej. $50, 45000..." class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
@@ -248,19 +373,26 @@
         let clienteSeleccionadoParaCita = null;
 
         document.getElementById('fechaRegistro').valueAsDate = new Date();
+        document.getElementById('fact-fecha').valueAsDate = new Date();
 
         function cambiarPestana(pestana) {
+            document.getElementById('vista-registro').classList.add('hidden');
+            document.getElementById('vista-consulta').classList.add('hidden');
+            document.getElementById('vista-facturacion').classList.add('hidden');
+            document.getElementById('btn-registro').classList.remove('bg-blue-900');
+            document.getElementById('btn-consulta').classList.remove('bg-blue-900');
+            document.getElementById('btn-facturacion').classList.remove('bg-blue-900');
+
             if(pestana === 'registro') {
                 document.getElementById('vista-registro').classList.remove('hidden');
-                document.getElementById('vista-consulta').classList.add('hidden');
                 document.getElementById('btn-registro').classList.add('bg-blue-900');
-                document.getElementById('btn-consulta').classList.remove('bg-blue-900');
-            } else {
-                document.getElementById('vista-registro').classList.add('hidden');
+            } else if(pestana === 'consulta') {
                 document.getElementById('vista-consulta').classList.remove('hidden');
-                document.getElementById('btn-registro').classList.remove('bg-blue-900');
                 document.getElementById('btn-consulta').classList.add('bg-blue-900');
                 buscarDatos(); 
+            } else if(pestana === 'facturacion') {
+                document.getElementById('vista-facturacion').classList.remove('hidden');
+                document.getElementById('btn-facturacion').classList.add('bg-blue-900');
             }
         }
 
@@ -348,8 +480,9 @@
                         <td class="p-2"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs font-bold">${item.frecuencia || 'No def.'}</span></td>
                         <td class="p-2">
                             <div class="flex flex-col gap-1 items-center">
-                                <button onclick="abrirModalEditar(${item.consecutivo})" class="w-full bg-blue-600 text-white px-2 py-1 rounded font-semibold text-xs hover:bg-blue-700 transition shadow">✏️ Editar</button>
-                                <button onclick="abrirModalCalendar(${item.consecutivo})" class="w-full bg-indigo-600 text-white px-2 py-1 rounded font-semibold text-xs hover:bg-indigo-700 transition shadow">📅 Agenda</button>
+                                <button onclick="abrirModalEditar(${item.consecutivo})" class="w-full bg-blue-600 text-white px-2 py-0.5 rounded font-semibold text-xs hover:bg-blue-700 transition shadow">✏️ Editar</button>
+                                <button onclick="abrirModalCalendar(${item.consecutivo})" class="w-full bg-indigo-600 text-white px-2 py-0.5 rounded font-semibold text-xs hover:bg-indigo-700 transition shadow">📅 Agenda</button>
+                                <button onclick="asociarClienteAFactura(${item.consecutivo})" class="w-full bg-emerald-600 text-white px-2 py-0.5 rounded font-semibold text-xs hover:bg-emerald-700 transition shadow">🧾 Facturar</button>
                             </div>
                         </td>
                     `;
@@ -507,9 +640,118 @@
                 alert("❌ Ocurrió un error al procesar el evento.");
             });
         }
+
+        // --- LÓGICA DEL SISTEMA DE FACTURACIÓN ---
+        
+        function asociarClienteAFactura(consecutivo) {
+            const cliente = datosTemporales.find(item => item.consecutivo == consecutivo);
+            if (!cliente) return;
+            
+            document.getElementById('fact-cliente-id').value = cliente.consecutivo;
+            document.getElementById('fact-nombre').value = cliente.nombre || '';
+            document.getElementById('fact-cedula').value = cliente.cedula || '';
+            document.getElementById('fact-cantidad').value = "1";
+            document.getElementById('fact-detalle').value = "Servicio de Fumigación y Control de Plagas. Frecuencia: " + (cliente.frecuencia || 'Regular');
+            
+            cambiarPestana('facturacion');
+        }
+
+        function calcularTotalesFactura() {
+            const cantidad = parseFloat(document.getElementById('fact-cantidad').value) || 1;
+            const subtotalUnitario = parseFloat(document.getElementById('fact-subtotal').value) || 0;
+            const porcentajeImp = parseFloat(document.getElementById('fact-impuesto-porcentaje').value) || 0;
+            
+            const subtotalCalculado = subtotalUnitario * cantidad;
+            const impuestoMonto = subtotalCalculado * (porcentajeImp / 100);
+            const totalNeto = subtotalCalculado + impuestoMonto;
+            
+            document.getElementById('fact-total').value = totalNeto.toFixed(2);
+        }
+
+        function guardarFactura(event) {
+            event.preventDefault();
+            const status = document.getElementById('status-factura');
+            status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-blue-100 text-blue-800 block";
+            status.innerText = "⏳ Guardando en Sheets y generando comprobante...";
+
+            const cantidad = parseFloat(document.getElementById('fact-cantidad').value) || 1;
+            const subtotalUnitario = parseFloat(document.getElementById('fact-subtotal').value) || 0;
+            const subtotalCalculado = subtotalUnitario * cantidad;
+            const porcentajeImp = parseFloat(document.getElementById('fact-impuesto-porcentaje').value) || 0;
+            const impuestoMonto = subtotalCalculado * (porcentajeImp / 100);
+            const totalFinal = document.getElementById('fact-total').value;
+
+            // 1. RELLENAR LOS CAMPOS DEL PDF DINÁMICAMENTE
+            const timestampID = "FAC-" + Date.now().toString().slice(-6); // Número temporal rápido
+            document.getElementById('pdf-num-factura').innerText = timestampID;
+            
+            // Convertir fecha de YYYY-MM-DD a DD/MM/YYYY para el PDF
+            const fRaw = document.getElementById('fact-fecha').value.split('-');
+            document.getElementById('pdf-fecha').innerText = fRaw[2] + '/' + fRaw[1] + '/' + fRaw[0];
+            
+            document.getElementById('pdf-cliente-nombre').innerText = document.getElementById('fact-nombre').value;
+            document.getElementById('pdf-cliente-cedula').innerText = document.getElementById('fact-cedula').value;
+            document.getElementById('pdf-cliente-id').innerText = document.getElementById('fact-cliente-id').value || 'S/C';
+            document.getElementById('pdf-metodo-pago').innerText = document.getElementById('fact-metodo').value;
+            
+            // Tabla de productos en PDF
+            document.getElementById('pdf-tabla-cant').innerText = cantidad;
+            document.getElementById('pdf-tabla-detalle').innerText = document.getElementById('fact-detalle').value;
+            document.getElementById('pdf-tabla-precio').innerText = subtotalUnitario.toFixed(2);
+            document.getElementById('pdf-tabla-subtotal').innerText = subtotalCalculado.toFixed(2);
+            
+            // Resúmenes inferiores
+            document.getElementById('pdf-resumen-subtotal').innerText = subtotalCalculado.toFixed(2);
+            document.getElementById('pdf-resumen-impuesto').innerText = impuestoMonto.toFixed(2);
+            document.getElementById('pdf-resumen-total').innerText = totalFinal;
+
+            // 2. ENVIAR LOS DATOS A GOOGLE SHEETS EN SEGUNDO PLANO
+            const dataObj = {
+                accion: "registrar_factura",
+                clienteId: document.getElementById('fact-cliente-id').value,
+                fechaFactura: document.getElementById('fact-fecha').value,
+                nombre: document.getElementById('fact-nombre').value,
+                cedula: document.getElementById('fact-cedula').value,
+                metodoPago: document.getElementById('fact-metodo').value,
+                cantidad: cantidad,
+                detalle: document.getElementById('fact-detalle').value,
+                subtotal: subtotalUnitario.toFixed(2),
+                impuesto: impuestoMonto.toFixed(2),
+                total: totalFinal
+            };
+
+            fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(dataObj)
+            })
+            .then(() => {
+                status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-green-100 text-green-800 block";
+                status.innerText = "✅ Factura guardada en la Nube. Preparando impresión...";
+                
+                // 3. ACTIVAR DISPARADOR DE IMPRESIÓN / GUARDADO PDF NATIVO
+                const areaPdf = document.getElementById('area-impresion-pdf');
+                areaPdf.classList.remove('hidden'); // Lo hace visible para el motor de impresión
+                
+                setTimeout(() => {
+                    window.print(); // Abre el cuadro de diálogo para Guardar como PDF o Mandar a imprimir
+                    areaPdf.classList.add('hidden'); // Lo vuelve a ocultar tras cerrar el menú de impresión
+                    
+                    // Limpiar el formulario para la siguiente venta
+                    document.getElementById('form-factura').reset();
+                    document.getElementById('fact-fecha').valueAsDate = new Date();
+                    document.getElementById('fact-cantidad').value = "1";
+                    document.getElementById('fact-total').value = "0.00";
+                }, 500);
+            })
+            .catch(err => {
+                status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-red-100 text-red-800 block";
+                status.innerText = "❌ Fallo al sincronizar en la hoja de cálculo.";
+            });
+        }
     </script>
 
-    <!-- Script de activación automático del Service Worker de la PWA -->
+    <!-- Script de activación del Service Worker de la PWA -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
