@@ -73,15 +73,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Dirección Exacta</label>
-                        <textarea id="direccion" rows="2" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Dirección detallada..."></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Comentarios / Observaciones Internas</label>
-                        <textarea id="comentarios" rows="2" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Notas sobre el cliente..."></textarea>
-                    </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-semibold mb-1">Dirección Exacta</label>
+                    <textarea id="direccion" rows="2" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Provincia, Cantón, Distrito..."></textarea>
                 </div>
                 <button type="submit" class="w-full bg-blue-700 text-white p-3 rounded-lg font-bold hover:bg-blue-800 transition shadow-lg text-lg">💾 Guardar Registro</button>
             </form>
@@ -96,7 +90,7 @@
             </div>
             
             <div class="overflow-x-auto">
-                <table class="w-full table-auto border-collapse text-left min-w-[1200px]">
+                <table class="w-full table-auto border-collapse text-left min-w-[1100px]">
                     <thead>
                         <tr class="bg-gray-100 text-gray-700 text-xs uppercase font-bold border-b border-gray-200">
                             <th class="p-2">Consec.</th>
@@ -105,13 +99,12 @@
                             <th class="p-2">Sucursal</th>
                             <th class="p-2">Teléfono</th>
                             <th class="p-2">Dirección / GPS</th>
-                            <th class="p-2">Comentarios</th>
                             <th class="p-2">Frec. Fumigación</th>
                             <th class="p-2 text-center">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="tabla-resultados" class="text-gray-600 text-sm divide-y divide-gray-100">
-                        <tr><td colspan="9" class="p-4 text-center text-gray-400">Haz clic en "Buscar" para cargar.</td></tr>
+                        <tr><td colspan="8" class="p-4 text-center text-gray-400">Haz clic en "Buscar" para cargar.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -172,15 +165,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Dirección Exacta</label>
-                        <textarea id="edit-direccion" rows="2" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Comentarios / Observaciones</label>
-                        <textarea id="edit-comentarios" rows="2" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
-                    </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-semibold mb-1">Dirección Exacta</label>
+                    <textarea id="edit-direccion" rows="2" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
                 </div>
                 <div class="flex justify-end gap-2 border-t pt-3">
                     <button type="button" onclick="cerrarModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-bold hover:bg-gray-400 transition">Cancelar</button>
@@ -191,35 +178,27 @@
     </div>
 
     <div id="modal-calendar" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
                 <h3 class="text-xl font-bold text-gray-800">📅 Agendar Cita de Calendar</h3>
                 <button onclick="cerrarModalCalendar()" class="text-gray-400 hover:text-gray-600 font-bold text-2xl">×</button>
             </div>
             <form id="form-calendar" onsubmit="crearEventoCalendar(event)">
-                <div class="mb-3">
+                <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-semibold mb-1">Título del Evento *</label>
                     <input type="text" id="cal-titulo" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                 </div>
-                <div class="grid grid-cols-2 gap-2 mb-3">
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Inicio Cita *</label>
-                        <input type="datetime-local" id="cal-inicio" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-semibold mb-1">Fin Cita *</label>
-                        <input type="datetime-local" id="cal-fin" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                </div>
-                
-                <div class="mb-3">
-                    <label class="block text-blue-700 text-sm font-bold mb-1">✍️ Notas o Comentarios Adicionales de esta Cita</label>
-                    <input type="text" id="cal-comentario-cita" oninput="actualizarDetalleDinamico()" placeholder="Ej. Recordar cobrar, usar traje especial..." class="w-full p-2 border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-blue-50">
-                </div>
-
                 <div class="mb-4">
-                    <label class="block text-gray-500 text-xs font-semibold mb-1">Vista previa del Detalle Final:</label>
-                    <textarea id="cal-descripcion" rows="6" class="w-full p-2 border rounded-lg bg-gray-100 text-xs text-gray-600 font-mono outline-none cursor-not-allowed" readonly></textarea>
+                    <label class="block text-gray-700 text-sm font-semibold mb-1">Inicio Cita *</label>
+                    <input type="datetime-local" id="cal-inicio" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-semibold mb-1">Fin Cita *</label>
+                    <input type="datetime-local" id="cal-fin" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-semibold mb-1">Detalles / Notas</label>
+                    <textarea id="cal-descripcion" rows="3" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 text-xs text-gray-600" readonly></textarea>
                 </div>
                 <div class="flex justify-end gap-2 border-t pt-3">
                     <button type="button" onclick="cerrarModalCalendar()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-bold hover:bg-gray-400 transition">Cancelar</button>
@@ -230,9 +209,8 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbx76P6eClGqUUit7fiq-frzOPaJQ9m1pl66fXaKmqsb124XFDobH4GH-h9VvexWnUNG/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbwRAZUcR0xg7na4FQN3257DRQKUmBvh9w_dlGQ_DFPY4bpPEVfW8-n6SbhiLnrnpRMw/exec";
         let datosTemporales = []; 
-        let clienteSeleccionadoParaCita = null;
 
         document.getElementById('fechaRegistro').valueAsDate = new Date();
 
@@ -268,7 +246,7 @@
             status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-blue-100 text-blue-800 block";
             status.innerText = "⏳ Guardando registro en la hoja de cálculo...";
 
-            const dataObj = {
+            const params = new URLSearchParams({
                 accion: "registrar",
                 nombre: document.getElementById('nombre').value,
                 cedula: document.getElementById('cedula').value,
@@ -278,31 +256,29 @@
                 direccion: document.getElementById('direccion').value,
                 gps: document.getElementById('gps').value,
                 fechaRegistro: document.getElementById('fechaRegistro').value,
-                frecuencia: document.getElementById('frecuencia').value,
-                comentarios: document.getElementById('comentarios').value
-            };
-            
-            fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(dataObj)
-            })
-            .then(() => {
-                status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-green-100 text-green-800 block";
-                status.innerText = "✅ ¡Guardado enviado con éxito! Puedes consultar la tabla.";
-                document.getElementById('form-registro').reset();
-                document.getElementById('fechaRegistro').valueAsDate = new Date();
+                frecuencia: document.getElementById('frecuencia').value
+            });
+
+            fetch(`${API_URL}?${params.toString()}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-green-100 text-green-800 block";
+                    status.innerText = "✅ ¡Guardado con éxito! Se asignó el Consecutivo N° " + data.consecutivoAsignado;
+                    document.getElementById('form-registro').reset();
+                    document.getElementById('fechaRegistro').valueAsDate = new Date();
+                } else { throw new Error(data.error); }
             })
             .catch(err => {
                 status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-red-100 text-red-800 block";
-                status.innerText = "❌ Error de red local.";
+                status.innerText = "❌ Error al intentar guardar.";
             });
         }
 
         function buscarDatos() {
             const query = document.getElementById('busqueda').value;
             const tbody = document.getElementById('tabla-resultados');
-            tbody.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-blue-500 font-bold">⏳ Descargando base de datos...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-blue-500 font-bold">⏳ Descargando base de datos...</td></tr>';
 
             fetch(`${API_URL}?q=${encodeURIComponent(query)}`)
             .then(res => res.json())
@@ -310,7 +286,7 @@
                 tbody.innerHTML = "";
                 datosTemporales = data; 
                 if(data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-gray-500">No se encontraron registros.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-gray-500">No se encontraron registros.</td></tr>';
                     return;
                 }
                 
@@ -319,7 +295,7 @@
                     if(fechaMostrada && typeof fechaMostrada === 'string' && fechaMostrada.includes('T')) {
                         fechaMostrada = new Date(item.fechaRegistro).toLocaleDateString('es-ES');
                     }
-                    let gpsHtml = item.gps ? `<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.gps)}" target="_blank" class="text-blue-500 underline text-xs">📍 Ver Mapa</a>` : '';
+                    let gpsHtml = item.gps ? `<br><a href="http://googleusercontent.com/maps.google.com/?q=${encodeURIComponent(item.gps)}" target="_blank" class="text-blue-500 underline text-xs">📍 Ver Mapa</a>` : '';
 
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-blue-50 transition border-b border-gray-100";
@@ -330,8 +306,7 @@
                         <td class="p-2">${item.cedula || ''}</td>
                         <td class="p-2"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">${item.sucursal || '-'}</span></td>
                         <td class="p-2 text-sm">${item.telefono || ''}<br><span class="text-xs text-gray-400">${item.email || ''}</span></td>
-                        <td class="p-2 text-xs max-w-[180px] truncate" title="${item.direccion || ''}">${item.direccion || ''}${gpsHtml}</td>
-                        <td class="p-2 text-xs text-gray-500 italic max-w-[150px] truncate" title="${item.comentarios || ''}">${item.comentarios || '-'}</td>
+                        <td class="p-2 text-xs max-w-[200px] truncate" title="${item.direccion || ''}">${item.direccion || ''}${gpsHtml}</td>
                         <td class="p-2"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs font-bold">${item.frecuencia || 'No def.'}</span></td>
                         <td class="p-2">
                             <div class="flex flex-col gap-1 items-center">
@@ -344,7 +319,7 @@
                 });
             })
             .catch(err => {
-                tbody.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-red-500 font-semibold">❌ Error de conexión o permisos en Google Script.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-red-500 font-semibold">❌ Error de conexión o permisos en Google Script.</td></tr>';
             });
         }
 
@@ -361,7 +336,6 @@
             document.getElementById('edit-email').value = cliente.email || '';
             document.getElementById('edit-direccion').value = cliente.direccion || '';
             document.getElementById('edit-gps').value = cliente.gps || '';
-            document.getElementById('edit-comentarios').value = cliente.comentarios || '';
             
             if(cliente.fechaRegistro) {
                 if(cliente.fechaRegistro.includes('T')) {
@@ -385,7 +359,7 @@
         function actualizarDatos(event) {
             event.preventDefault();
 
-            const dataObj = {
+            const params = new URLSearchParams({
                 accion: "editar",
                 consecutivo: document.getElementById('edit-consecutivo').value,
                 nombre: document.getElementById('edit-nombre').value,
@@ -396,35 +370,38 @@
                 direccion: document.getElementById('edit-direccion').value,
                 gps: document.getElementById('edit-gps').value,
                 fechaRegistro: document.getElementById('edit-fechaRegistro').value,
-                frecuencia: document.getElementById('edit-frecuencia').value,
-                comentarios: document.getElementById('edit-comentarios').value
-            };
+                frecuencia: document.getElementById('edit-frecuencia').value
+            });
 
-            fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(dataObj)
-            })
-            .then(() => {
-                alert("✅ ¡Solicitud de edición enviada con éxito! Comprobando cambios...");
-                cerrarModal();
-                setTimeout(buscarDatos, 1500); 
+            fetch(`${API_URL}?${params.toString()}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    alert("✅ ¡Registro modificado con éxito en Google Sheets!");
+                    cerrarModal();
+                    buscarDatos(); 
+                } else { alert("❌ Error: " + (data.error || "No se pudo actualizar")); }
             })
             .catch(err => {
                 console.error(err);
-                alert("❌ Ocurrió un fallo en la conexión de red externa.");
+                alert("❌ Error de conexión al intentar actualizar.");
             });
         }
 
+        // ==========================================
+        // CALENDARIO COMPLEMENTARIO
+        // ==========================================
         function abrirModalCalendar(consecutivo) {
             const cliente = datosTemporales.find(item => item.consecutivo == consecutivo);
             if (!cliente) return;
 
-            clienteSeleccionadoParaCita = cliente; 
-            document.getElementById('cal-comentario-cita').value = ""; 
             document.getElementById('cal-titulo').value = "Fumigación: " + (cliente.nombre || '') + " (" + (cliente.sucursal || 'Principal') + ")";
             
-            actualizarDetalleDinamico();
+            document.getElementById('cal-descripcion').value = 
+                "Cliente: " + (cliente.nombre || '') + "\n" +
+                "Teléfono: " + (cliente.telefono || 'No indicado') + "\n" +
+                "Dirección: " + (cliente.direccion || 'No indicada') + "\n" +
+                "GPS: " + (cliente.gps || '');
 
             const ahora = new Date();
             ahora.setMinutes(0);
@@ -438,25 +415,8 @@
             document.getElementById('modal-calendar').classList.remove('hidden');
         }
 
-        function actualizarDetalleDinamico() {
-            if (!clienteSeleccionadoParaCita) return;
-            
-            const comentarioDeEstaCita = document.getElementById('cal-comentario-cita').value;
-
-            document.getElementById('cal-descripcion').value = 
-                "Cliente: " + (clienteSeleccionadoParaCita.nombre || '') + "\n" +
-                "Teléfono: " + (clienteSeleccionadoParaCita.telefono || 'No indicado') + "\n" +
-                "Dirección: " + (clienteSeleccionadoParaCita.direccion || 'No indicada') + "\n" +
-                "GPS: " + (clienteSeleccionadoParaCita.gps || '') + "\n" +
-                "-----------------------------------------\n" +
-                "COMENTARIO DE ESTA CITA: " + (comentarioDeEstaCita || 'Ninguno') + "\n" +
-                "-----------------------------------------\n" +
-                "OBSERVACIONES FIJAS: " + (clienteSeleccionadoParaCita.comentarios || 'Ninguna registrada.');
-        }
-
         function cerrarModalCalendar() {
             document.getElementById('modal-calendar').classList.add('hidden');
-            clienteSeleccionadoParaCita = null;
         }
 
         function crearEventoCalendar(event) {
@@ -465,24 +425,23 @@
             btn.disabled = true;
             btn.innerText = "⏳ Creando...";
 
-            const dataObj = {
+            const params = new URLSearchParams({
                 accion: "agendar_evento",
                 titulo: document.getElementById('cal-titulo').value,
                 inicio: document.getElementById('cal-inicio').value,
                 fin: document.getElementById('cal-fin').value,
                 descripcion: document.getElementById('cal-descripcion').value
-            };
+            });
 
-            fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(dataObj)
-            })
-            .then(() => {
+            fetch(`${API_URL}?${params.toString()}`)
+            .then(res => res.json())
+            .then(data => {
                 btn.disabled = false;
                 btn.innerText = "🗓️ Crear Cita";
-                alert("📅 ¡Cita procesada con éxito hacia Google Calendar!");
-                cerrarModalCalendar();
+                if(data.status === "success") {
+                    alert("📅 ¡Cita añadida con éxito a tu Google Calendar principal!");
+                    cerrarModalCalendar();
+                } else { alert("❌ Error: " + data.error); }
             })
             .catch(err => {
                 console.error(err);
