@@ -363,14 +363,13 @@
     </div>
 
     <script>
-        const API_URL = "TU_URL_DE_APPS_SCRIPT"; // <--- PEGA AQUÍ TU ENLACE DE GOOGLE WEB APP
+        const API_URL = "https://script.google.com/macros/s/AKfycbxHgG0bJ7_dxVuyD0IRidiH7fSP2gqLLeTMMS81ewWBcjxLo5ebN6z6YoUf5QGug58b/exec"; 
         let datosTemporales = []; 
         let clienteSeleccionadoParaCita = null;
 
         document.getElementById('fechaRegistro').valueAsDate = new Date();
         document.getElementById('fact-fecha').valueAsDate = new Date();
 
-        // Al iniciar la aplicación web, descargamos la base de datos completa una vez en segundo plano
         window.addEventListener('DOMContentLoaded', () => {
             fetch(API_URL)
             .then(res => res.json())
@@ -442,7 +441,6 @@
                 document.getElementById('form-registro').reset();
                 document.getElementById('fechaRegistro').valueAsDate = new Date();
                 
-                // Actualizar la memoria en segundo plano
                 fetch(API_URL).then(res => res.json()).then(data => { datosTemporales = data; });
             })
             .catch(err => {
@@ -560,7 +558,6 @@
             .then(() => {
                 alert("✅ ¡Solicitud de edición enviada con éxito! Comprobando cambios...");
                 cerrarModal();
-                // Forzar refresco de memoria local y de tabla
                 fetch(API_URL).then(res => res.json()).then(data => { datosTemporales = data; buscarDatos(); });
             })
             .catch(err => {
@@ -648,8 +645,6 @@
             });
         }
 
-        // --- LÓGICA DEL SISTEMA DE FACTURACIÓN CON DESPLEGABLE ---
-        
         function actualizarDesplegableClientes() {
             const selectNombre = document.getElementById('fact-nombre');
             const valorActual = selectNombre.value; 
@@ -687,7 +682,6 @@
             const cliente = datosTemporales.find(item => item.consecutivo == consecutivo);
             if (!cliente) return;
             
-            // Forzar actualización del menú para asegurar que el cliente existe en el listado
             actualizarDesplegableClientes();
             
             document.getElementById('fact-nombre').value = cliente.nombre || '';
@@ -724,7 +718,6 @@
             const impuestoMonto = subtotalCalculado * (porcentajeImp / 100);
             const totalFinal = document.getElementById('fact-total').value;
 
-            // 1. RELLENAR LOS CAMPOS DEL PDF DINÁMICAMENTE
             const timestampID = "FAC-" + Date.now().toString().slice(-6); 
             document.getElementById('pdf-num-factura').innerText = timestampID;
             
@@ -745,7 +738,6 @@
             document.getElementById('pdf-resumen-impuesto').innerText = impuestoMonto.toFixed(2);
             document.getElementById('pdf-resumen-total').innerText = totalFinal;
 
-            // 2. ENVIAR LOS DATOS A GOOGLE SHEETS
             const dataObj = {
                 accion: "registrar_factura",
                 clienteId: document.getElementById('fact-cliente-id').value,
