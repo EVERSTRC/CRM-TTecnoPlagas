@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TecnoPlagas Pro v24.3</title>
+<title>TecnoPlagas Pro v24.4</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
-:root { --primary: #1e272e; --accent: #05c46b; }
+:root { --primary: #1e272e; --accent: #05c46b; --purple: #3c40c6; }
 body { background: #f1f2f6; font-family: 'Segoe UI', sans-serif; font-size: 0.8rem; }
 .card { border-radius: 10px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; padding: 15px; }
 .nav-link { color: #57606f; font-weight: bold; cursor: pointer; }
@@ -16,6 +16,7 @@ body { background: #f1f2f6; font-family: 'Segoe UI', sans-serif; font-size: 0.8r
 select[multiple] { height: 160px !important; font-size: 0.75rem; border: 2px solid #dfe4ea; }
 .btn-save { font-weight: 800; letter-spacing: 1px; }
 .section-header { border-left: 4px solid var(--accent); padding-left: 10px; margin-bottom: 15px; font-weight: 800; }
+.section-header.purple { border-left-color: var(--purple); }
 </style>
 </head>
 <body>
@@ -26,11 +27,13 @@ select[multiple] { height: 160px !important; font-size: 0.75rem; border: 2px sol
 <li class="nav-item"><a class="nav-link" onclick="showTab('v-cebaderos', this)">CEBADEROS</a></li>
 <li class="nav-item"><a class="nav-link" onclick="showTab('v-visitas', this)">VISITAS</a></li>
 <li class="nav-item"><a class="nav-link" onclick="showTab('v-factura', this)">FACTURACIÓN</a></li>
+<li class="nav-item"><a class="nav-link text-primary" onclick="showTab('v-calendar', this)">📅 CITAS (CALENDAR)</a></li>
 </ul>
 </div>
 
 <div class="container-fluid">
 
+<!-- VISTA CLIENTES -->
 <div id="v-clientes" class="tab-content">
 <div class="card">
 <h6 class="section-header">MAESTRO DE CLIENTES</h6>
@@ -50,6 +53,7 @@ select[multiple] { height: 160px !important; font-size: 0.75rem; border: 2px sol
 </div>
 </div>
 
+<!-- VISTA CEBADEROS -->
 <div id="v-cebaderos" class="tab-content d-none">
 <div class="card">
 <h6 class="section-header text-success">BASE DE DATOS CEBADEROS</h6>
@@ -102,6 +106,7 @@ select[multiple] { height: 160px !important; font-size: 0.75rem; border: 2px sol
 </div>
 </div>
 
+<!-- VISTA VISITAS -->
 <div id="v-visitas" class="tab-content d-none">
 <div class="card">
 <h6 class="section-header text-warning">BASE DE DATOS VISITAS</h6>
@@ -182,6 +187,7 @@ select[multiple] { height: 160px !important; font-size: 0.75rem; border: 2px sol
 </div>
 </div>
 
+<!-- VISTA FACTURACIÓN -->
 <div id="v-factura" class="tab-content d-none">
 <div class="card">
 <h6 class="section-header text-info">BASE DE DATOS FACTURACIÓN</h6>
@@ -205,11 +211,64 @@ select[multiple] { height: 160px !important; font-size: 0.75rem; border: 2px sol
 </div>
 </div>
 
+<!-- NUEVA VISTA: EXCLUSIVA DE GOOGLE CALENDAR -->
+<div id="v-calendar" class="tab-content d-none">
+<div class="card">
+<h6 class="section-header purple text-primary">📅 AGENDAR EN GOOGLE CALENDAR</h6>
+<div class="row g-2">
+<div class="col-md-6">
+    <label class="form-label">Seleccionar Cliente</label>
+    <select id="cal_nom" class="form-select select-clientes" onchange="autoFillCalendar()"></select>
+</div>
+<div class="col-md-6">
+    <label class="form-label">Sucursal / Sede</label>
+    <input type="text" id="cal_suc" class="form-control" placeholder="Ej: Planta Principal">
+</div>
+<div class="col-md-4">
+    <label class="form-label">Fecha de la Cita</label>
+    <input type="date" id="cal_fec" class="form-control">
+</div>
+<div class="col-md-4">
+    <label class="form-label">Hora de Inicio</label>
+    <input type="time" id="cal_hor" class="form-control">
+</div>
+<div class="col-md-4">
+    <label class="form-label">Duración Estimada</label>
+    <select id="cal_dur" class="form-select">
+        <option value="30">30 Minutos</option>
+        <option value="60" selected>1 Hora</option>
+        <option value="90">1 Hora y Media</option>
+        <option value="120">2 Horas</option>
+        <option value="180">3 Horas</option>
+    </select>
+</div>
+<div class="col-md-6">
+    <label class="form-label">Asunto / Motivo</label>
+    <select id="cal_asu" class="form-select">
+        <option>Inspección Inicial</option>
+        <option>Fumigación de Rutina</option>
+        <option>Refuerzo / Control Técnico</option>
+        <option>Mantenimiento de Cebaderos</option>
+        <option>Tratamiento de Emergencia</option>
+    </select>
+</div>
+<div class="col-md-6">
+    <label class="form-label">Técnico Asignado</label>
+    <input type="text" id="cal_tec" class="form-control" placeholder="Nombre del técnico">
+</div>
+<div class="col-12">
+    <label class="form-label">Notas Adicionales (Irán a la descripción del evento)</label>
+    <textarea id="cal_com" class="form-control" rows="3" placeholder="Información útil para el calendario..."></textarea>
+</div>
+</div>
+<button class="btn btn-primary btn-save w-100 mt-4 text-white" style="background-color: var(--purple); border-color: var(--purple);" onclick="guardarGeneral('CitasCalendar', 'cal')">AGENDAR EVENTO EN CALENDAR</button>
+</div>
+</div>
+
 </div>
 
 <script>
-// URL de tu API en Google Apps Script
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx3l9ZT-P3takIBvyk5YJ7aP7gVskOLeym57Slm4ekgM1ypi-BeQAqg9JYzrb23Zlno/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzX4zrCQxPPoikyTwQW2sEQr8djqJjXK4_nFtsUc9msJQUZE1gJZrPPJmpR2obm-BZ1/exec";
 let estacionesTemp = [];
 
 function showTab(id, link) {
@@ -219,7 +278,6 @@ function showTab(id, link) {
     link.classList.add('active');
 }
 
-// Carga de Clientes mapeando correctamente la Columna B
 function cargarClientes() {
     fetch(SCRIPT_URL)
         .then(res => res.json())
@@ -229,9 +287,8 @@ function cargarClientes() {
                 select.innerHTML = '<option value="">Seleccione un cliente...</option>';
                 data.forEach(c => {
                     let option = document.createElement("option");
-                    option.value = c.nombre; // Columna B (Nombre Completo)
+                    option.value = c.nombre; 
                     option.textContent = c.nombre;
-                    // Guardamos metadatos adicionales en el DOM
                     option.dataset.cedula = c.id || "";
                     option.dataset.telefono = c.tel || "";
                     option.dataset.direccion = c.loc || "";
@@ -243,7 +300,6 @@ function cargarClientes() {
         .catch(err => console.error("Error cargando maestro de clientes:", err));
 }
 
-// Auto-relleno inteligente al cambiar de cliente en Facturación
 function autoFillFact() {
     const sel = document.getElementById("f_nom");
     const opt = sel.options[sel.selectedIndex];
@@ -257,6 +313,16 @@ function autoFillFact() {
         document.getElementById("f_tel").value = "";
         document.getElementById("f_dir").value = "";
         document.getElementById("f_lug").value = "";
+    }
+}
+
+function autoFillCalendar() {
+    const sel = document.getElementById("cal_nom");
+    const opt = sel.options[sel.selectedIndex];
+    if(opt && opt.value !== "") {
+        document.getElementById("cal_suc").value = opt.dataset.sucursal || "";
+    } else {
+        document.getElementById("cal_suc").value = "";
     }
 }
 
@@ -327,11 +393,11 @@ function guardarGeneral(pestana, prefijo) {
         body: JSON.stringify({pestana: pestana, datos: datos})
     })
     .then(() => {
-        alert("Registro procesado e ingresado correctamente");
+        alert("¡Proceso exitoso! Datos enviados correctamente.");
         inputs.forEach(i => { if(i.id !== `${prefijo}_con`) i.value = ""; });
         if(pestana === "Clientes") cargarClientes();
     })
-    .catch(err => alert("Error al guardar: " + err));
+    .catch(err => alert("Error al procesar la solicitud: " + err));
 }
 
 function guardarCebaderos() {
@@ -366,6 +432,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if(document.getElementById("ceb_fec")) document.getElementById("ceb_fec").value = hoy;
     if(document.getElementById("v_fec")) document.getElementById("v_fec").value = hoy;
     if(document.getElementById("f_fec")) document.getElementById("f_fec").value = hoy;
+    if(document.getElementById("cal_fec")) document.getElementById("cal_fec").value = hoy;
     
     cargarClientes();
 });
