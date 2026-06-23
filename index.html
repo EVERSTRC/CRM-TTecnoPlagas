@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Control de Fumigaciones y Agenda</title>
-    <!-- Vinculación del Manifiesto para PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1d4ed8">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -33,7 +32,6 @@
 
     <main class="flex-grow container mx-auto p-4 max-w-6xl mt-6">
         
-        <!-- PESTAÑA 1: FORMULARIO CLIENTE -->
         <div id="vista-registro" class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
             <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">Registrar Servicio / Cliente</h2>
             <form id="form-registro" onsubmit="guardarDatos(event)">
@@ -102,7 +100,6 @@
             <div id="status-registro" class="mt-4 hidden text-center font-semibold p-3 rounded-lg"></div>
         </div>
 
-        <!-- PESTAÑA 2: CONSULTA -->
         <div id="vista-consulta" class="bg-white p-6 rounded-xl shadow-md border border-gray-200 hidden">
             <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">Consultar Base de Datos</h2>
             <div class="flex flex-col sm:flex-row mb-6 gap-2">
@@ -132,7 +129,6 @@
             </div>
         </div>
 
-        <!-- PESTAÑA 3: SISTEMA DE FACTURACIÓN -->
         <div id="vista-facturacion" class="bg-white p-6 rounded-xl shadow-md border border-gray-200 hidden">
             <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">🧾 Emitir Factura de Servicio</h2>
             <form id="form-factura" onsubmit="guardarFactura(event)">
@@ -151,7 +147,9 @@
                     </div>
                     <div>
                         <label class="block text-gray-700 text-sm font-semibold mb-1">Nombre / Razón Social *</label>
-                        <input type="text" id="fact-nombre" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        <select id="fact-nombre" required onchange="autoRellenarDatosFactura(this.value)" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                            <option value="">Seleccione un cliente...</option>
+                        </select>
                     </div>
                     <div>
                         <label class="block text-gray-700 text-sm font-semibold mb-1">Cédula Física o Jurídica *</label>
@@ -200,7 +198,6 @@
         </div>
     </main>
 
-    <!-- ÁREA OCULTA PARA EL FORMATO DE IMPRESIÓN DEL PDF (TICKET PROFESIONAL) -->
     <div id="area-impresion-pdf" class="hidden p-8 max-w-xl mx-auto bg-white text-gray-800 font-mono text-sm leading-relaxed">
         <div class="text-center border-b-2 border-dashed pb-4 mb-4">
             <h2 class="text-xl font-bold uppercase tracking-wider">🪰 Control de Plagas Profesionales</h2>
@@ -249,7 +246,6 @@
         </div>
     </div>
 
-    <!-- MODAL 1: EDITAR REGISTRO -->
     <div id="modal-editar" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-xl shadow-2xl max-w-3xl w-full p-6 overflow-y-auto max-h-[90vh]">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
@@ -322,7 +318,6 @@
         </div>
     </div>
 
-    <!-- MODAL 2: AGENDAR EN GOOGLE CALENDAR -->
     <div id="modal-calendar" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
@@ -368,12 +363,20 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbx76P6eClGqUUit7fiq-frzOPaJQ9m1pl66fXaKmqsb124XFDobH4GH-h9VvexWnUNG/exec";
+        const API_URL = "TU_URL_DE_APPS_SCRIPT"; // <--- PEGA AQUÍ TU ENLACE DE GOOGLE WEB APP
         let datosTemporales = []; 
         let clienteSeleccionadoParaCita = null;
 
         document.getElementById('fechaRegistro').valueAsDate = new Date();
         document.getElementById('fact-fecha').valueAsDate = new Date();
+
+        // Al iniciar la aplicación web, descargamos la base de datos completa una vez en segundo plano
+        window.addEventListener('DOMContentLoaded', () => {
+            fetch(API_URL)
+            .then(res => res.json())
+            .then(data => { datosTemporales = data; })
+            .catch(err => console.warn("Aún no hay datos guardados o falta configurar la URL."));
+        });
 
         function cambiarPestana(pestana) {
             document.getElementById('vista-registro').classList.add('hidden');
@@ -393,6 +396,7 @@
             } else if(pestana === 'facturacion') {
                 document.getElementById('vista-facturacion').classList.remove('hidden');
                 document.getElementById('btn-facturacion').classList.add('bg-blue-900');
+                actualizarDesplegableClientes();
             }
         }
 
@@ -434,9 +438,12 @@
             })
             .then(() => {
                 status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-green-100 text-green-800 block";
-                status.innerText = "✅ ¡Guardado enviado con éxito! Puedes consultar la tabla.";
+                status.innerText = "✅ ¡Guardado enviado con éxito! Recargando datos...";
                 document.getElementById('form-registro').reset();
                 document.getElementById('fechaRegistro').valueAsDate = new Date();
+                
+                // Actualizar la memoria en segundo plano
+                fetch(API_URL).then(res => res.json()).then(data => { datosTemporales = data; });
             })
             .catch(err => {
                 status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-red-100 text-red-800 block";
@@ -453,7 +460,6 @@
             .then(res => res.json())
             .then(data => {
                 tbody.innerHTML = "";
-                datosTemporales = data; 
                 if(data.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-gray-500">No se encontraron registros.</td></tr>';
                     return;
@@ -464,7 +470,7 @@
                     if(fechaMostrada && typeof fechaMostrada === 'string' && fechaMostrada.includes('T')) {
                         fechaMostrada = new Date(item.fechaRegistro).toLocaleDateString('es-ES');
                     }
-                    let gpsHtml = item.gps ? `<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.gps)}" target="_blank" class="text-blue-500 underline text-xs">📍 Ver Mapa</a>` : '';
+                    let gpsHtml = item.gps ? `<br><a href="https://maps.google.com/?q=${encodeURIComponent(item.gps)}" target="_blank" class="text-blue-500 underline text-xs">📍 Ver Mapa</a>` : '';
 
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-blue-50 transition border-b border-gray-100";
@@ -554,7 +560,8 @@
             .then(() => {
                 alert("✅ ¡Solicitud de edición enviada con éxito! Comprobando cambios...");
                 cerrarModal();
-                setTimeout(buscarDatos, 1500); 
+                // Forzar refresco de memoria local y de tabla
+                fetch(API_URL).then(res => res.json()).then(data => { datosTemporales = data; buscarDatos(); });
             })
             .catch(err => {
                 console.error(err);
@@ -619,7 +626,7 @@
                 titulo: document.getElementById('cal-titulo').value,
                 inicio: document.getElementById('cal-inicio').value,
                 fin: document.getElementById('cal-fin').value,
-                descripcion: document.getElementById('cal-descripcion').value
+                description: document.getElementById('cal-descripcion').value
             };
 
             fetch(API_URL, {
@@ -641,14 +648,50 @@
             });
         }
 
-        // --- LÓGICA DEL SISTEMA DE FACTURACIÓN ---
+        // --- LÓGICA DEL SISTEMA DE FACTURACIÓN CON DESPLEGABLE ---
         
+        function actualizarDesplegableClientes() {
+            const selectNombre = document.getElementById('fact-nombre');
+            const valorActual = selectNombre.value; 
+            
+            selectNombre.innerHTML = '<option value="">Seleccione un cliente...</option>';
+            
+            datosTemporales.forEach(cliente => {
+                if(cliente.nombre) {
+                    const option = document.createElement('option');
+                    option.value = cliente.nombre;
+                    option.textContent = cliente.nombre + (cliente.sucursal ? ` (${cliente.sucursal})` : '');
+                    selectNombre.appendChild(option);
+                }
+            });
+            
+            if (valorActual) selectNombre.value = valorActual;
+        }
+
+        function autoRellenarDatosFactura(nombreSeleccionado) {
+            if (!nombreSeleccionado) {
+                document.getElementById('fact-cliente-id').value = '';
+                document.getElementById('fact-cedula').value = '';
+                return;
+            }
+            
+            const cliente = datosTemporales.find(item => item.nombre === nombreSeleccionado);
+            if (cliente) {
+                document.getElementById('fact-cliente-id').value = cliente.consecutivo || '';
+                document.getElementById('fact-cedula').value = cliente.cedula || '';
+                document.getElementById('fact-detalle').value = "Servicio de Fumigación y Control de Plagas. Frecuencia: " + (cliente.frecuencia || 'Regular');
+            }
+        }
+
         function asociarClienteAFactura(consecutivo) {
             const cliente = datosTemporales.find(item => item.consecutivo == consecutivo);
             if (!cliente) return;
             
-            document.getElementById('fact-cliente-id').value = cliente.consecutivo;
+            // Forzar actualización del menú para asegurar que el cliente existe en el listado
+            actualizarDesplegableClientes();
+            
             document.getElementById('fact-nombre').value = cliente.nombre || '';
+            document.getElementById('fact-cliente-id').value = cliente.consecutivo;
             document.getElementById('fact-cedula').value = cliente.cedula || '';
             document.getElementById('fact-cantidad').value = "1";
             document.getElementById('fact-detalle').value = "Servicio de Fumigación y Control de Plagas. Frecuencia: " + (cliente.frecuencia || 'Regular');
@@ -682,10 +725,9 @@
             const totalFinal = document.getElementById('fact-total').value;
 
             // 1. RELLENAR LOS CAMPOS DEL PDF DINÁMICAMENTE
-            const timestampID = "FAC-" + Date.now().toString().slice(-6); // Número temporal rápido
+            const timestampID = "FAC-" + Date.now().toString().slice(-6); 
             document.getElementById('pdf-num-factura').innerText = timestampID;
             
-            // Convertir fecha de YYYY-MM-DD a DD/MM/YYYY para el PDF
             const fRaw = document.getElementById('fact-fecha').value.split('-');
             document.getElementById('pdf-fecha').innerText = fRaw[2] + '/' + fRaw[1] + '/' + fRaw[0];
             
@@ -694,18 +736,16 @@
             document.getElementById('pdf-cliente-id').innerText = document.getElementById('fact-cliente-id').value || 'S/C';
             document.getElementById('pdf-metodo-pago').innerText = document.getElementById('fact-metodo').value;
             
-            // Tabla de productos en PDF
             document.getElementById('pdf-tabla-cant').innerText = cantidad;
             document.getElementById('pdf-tabla-detalle').innerText = document.getElementById('fact-detalle').value;
             document.getElementById('pdf-tabla-precio').innerText = subtotalUnitario.toFixed(2);
             document.getElementById('pdf-tabla-subtotal').innerText = subtotalCalculado.toFixed(2);
             
-            // Resúmenes inferiores
             document.getElementById('pdf-resumen-subtotal').innerText = subtotalCalculado.toFixed(2);
             document.getElementById('pdf-resumen-impuesto').innerText = impuestoMonto.toFixed(2);
             document.getElementById('pdf-resumen-total').innerText = totalFinal;
 
-            // 2. ENVIAR LOS DATOS A GOOGLE SHEETS EN SEGUNDO PLANO
+            // 2. ENVIAR LOS DATOS A GOOGLE SHEETS
             const dataObj = {
                 accion: "registrar_factura",
                 clienteId: document.getElementById('fact-cliente-id').value,
@@ -729,15 +769,13 @@
                 status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-green-100 text-green-800 block";
                 status.innerText = "✅ Factura guardada en la Nube. Preparando impresión...";
                 
-                // 3. ACTIVAR DISPARADOR DE IMPRESIÓN / GUARDADO PDF NATIVO
                 const areaPdf = document.getElementById('area-impresion-pdf');
-                areaPdf.classList.remove('hidden'); // Lo hace visible para el motor de impresión
+                areaPdf.classList.remove('hidden'); 
                 
                 setTimeout(() => {
-                    window.print(); // Abre el cuadro de diálogo para Guardar como PDF o Mandar a imprimir
-                    areaPdf.classList.add('hidden'); // Lo vuelve a ocultar tras cerrar el menú de impresión
+                    window.print(); 
+                    areaPdf.classList.add('hidden'); 
                     
-                    // Limpiar el formulario para la siguiente venta
                     document.getElementById('form-factura').reset();
                     document.getElementById('fact-fecha').valueAsDate = new Date();
                     document.getElementById('fact-cantidad').value = "1";
@@ -747,17 +785,6 @@
             .catch(err => {
                 status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-red-100 text-red-800 block";
                 status.innerText = "❌ Fallo al sincronizar en la hoja de cálculo.";
-            });
-        }
-    </script>
-
-    <!-- Script de activación del Service Worker de la PWA -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('PWA Service Worker registrado con éxito', reg))
-                    .catch(err => console.error('Error al registrar Service Worker', err));
             });
         }
     </script>
