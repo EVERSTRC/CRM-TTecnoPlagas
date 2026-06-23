@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Control de Fumigaciones</title>
+    <title>Sistema de Control de Fumigaciones y Agenda</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 font-sans min-h-screen flex flex-col">
 
     <header class="bg-blue-700 text-white shadow-md p-4">
         <div class="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-            <h1 class="text-xl font-bold tracking-wide">🕷️ Gestión de Fumigaciones y Clientes</h1>
+            <h1 class="text-xl font-bold tracking-wide">🕷️ Gestión de Fumigaciones y Agenda</h1>
             <nav class="flex space-x-2">
                 <button id="btn-registro" class="px-4 py-2 rounded bg-blue-900 font-semibold transition" onclick="cambiarPestana('registro')">Nuevo Registro</button>
-                <button id="btn-consulta" class="px-4 py-2 rounded hover:bg-blue-600 font-semibold transition" onclick="cambiarPestana('consulta')">Consultar Datos</button>
+                <button id="btn-consulta" class="px-4 py-2 rounded hover:bg-blue-600 font-semibold transition" onclick="cambiarPestana('consulta')">Consultar Clientes / Citas</button>
             </nav>
         </div>
     </header>
@@ -177,8 +177,39 @@
         </div>
     </div>
 
+    <div id="modal-calendar" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-xl font-bold text-gray-800">📅 Agendar Cita de Calendar</h3>
+                <button onclick="cerrarModalCalendar()" class="text-gray-400 hover:text-gray-600 font-bold text-2xl">×</button>
+            </div>
+            <form id="form-calendar" onsubmit="crearEventoCalendar(event)">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-semibold mb-1">Título del Evento *</label>
+                    <input type="text" id="cal-titulo" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-semibold mb-1">Inicio Cita *</label>
+                    <input type="datetime-local" id="cal-inicio" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-semibold mb-1">Fin Cita *</label>
+                    <input type="datetime-local" id="cal-fin" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-semibold mb-1">Detalles / Notas</label>
+                    <textarea id="cal-descripcion" rows="3" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 text-xs text-gray-600" readonly></textarea>
+                </div>
+                <div class="flex justify-end gap-2 border-t pt-3">
+                    <button type="button" onclick="cerrarModalCalendar()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-bold hover:bg-gray-400 transition">Cancelar</button>
+                    <button type="submit" id="btn-submit-calendar" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 transition shadow">🗓️ Crear Cita</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycby4vrwVqX_-eBnsSyT054xt1-zAyZXvmDFX3P3zlsO1vgZr_Mn7qgcwY4iZ_jiLPpv6/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbwRAZUcR0xg7na4FQN3257DRQKUmBvh9w_dlGQ_DFPY4bpPEVfW8-n6SbhiLnrnpRMw/exec";
         let datosTemporales = []; 
 
         document.getElementById('fechaRegistro').valueAsDate = new Date();
@@ -263,8 +294,6 @@
                     let fechaMostrada = item.fechaRegistro || '';
                     if(fechaMostrada && typeof fechaMostrada === 'string' && fechaMostrada.includes('T')) {
                         fechaMostrada = new Date(item.fechaRegistro).toLocaleDateString('es-ES');
-                    } else if (fechaMostrada) {
-                        fechaMostrada = String(fechaMostrada).split('T')[0];
                     }
                     let gpsHtml = item.gps ? `<br><a href="http://googleusercontent.com/maps.google.com/?q=${encodeURIComponent(item.gps)}" target="_blank" class="text-blue-500 underline text-xs">📍 Ver Mapa</a>` : '';
 
@@ -279,8 +308,11 @@
                         <td class="p-2 text-sm">${item.telefono || ''}<br><span class="text-xs text-gray-400">${item.email || ''}</span></td>
                         <td class="p-2 text-xs max-w-[200px] truncate" title="${item.direccion || ''}">${item.direccion || ''}${gpsHtml}</td>
                         <td class="p-2"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs font-bold">${item.frecuencia || 'No def.'}</span></td>
-                        <td class="p-2 text-center">
-                            <button onclick="abrirModalEditar(${item.consecutivo})" class="bg-blue-600 text-white px-3 py-1.5 rounded-md font-semibold text-xs hover:bg-blue-700 transition shadow">✏️ Editar</button>
+                        <td class="p-2">
+                            <div class="flex flex-col gap-1 items-center">
+                                <button onclick="abrirModalEditar(${item.consecutivo})" class="w-full bg-blue-600 text-white px-2 py-1 rounded font-semibold text-xs hover:bg-blue-700 transition shadow">✏️ Editar</button>
+                                <button onclick="abrirModalCalendar(${item.consecutivo})" class="w-full bg-indigo-600 text-white px-2 py-1 rounded font-semibold text-xs hover:bg-indigo-700 transition shadow">📅 Agenda</button>
+                            </div>
                         </td>
                     `;
                     tbody.appendChild(tr);
@@ -353,6 +385,69 @@
             .catch(err => {
                 console.error(err);
                 alert("❌ Error de conexión al intentar actualizar.");
+            });
+        }
+
+        // ==========================================
+        // CALENDARIO COMPLEMENTARIO
+        // ==========================================
+        function abrirModalCalendar(consecutivo) {
+            const cliente = datosTemporales.find(item => item.consecutivo == consecutivo);
+            if (!cliente) return;
+
+            document.getElementById('cal-titulo').value = "Fumigación: " + (cliente.nombre || '') + " (" + (cliente.sucursal || 'Principal') + ")";
+            
+            document.getElementById('cal-descripcion').value = 
+                "Cliente: " + (cliente.nombre || '') + "\n" +
+                "Teléfono: " + (cliente.telefono || 'No indicado') + "\n" +
+                "Dirección: " + (cliente.direccion || 'No indicada') + "\n" +
+                "GPS: " + (cliente.gps || '');
+
+            const ahora = new Date();
+            ahora.setMinutes(0);
+            const formatoInicio = ahora.toISOString().slice(0, 16);
+            ahora.setHours(ahora.getHours() + 1);
+            const formatoFin = ahora.toISOString().slice(0, 16);
+
+            document.getElementById('cal-inicio').value = formatoInicio;
+            document.getElementById('cal-fin').value = formatoFin;
+
+            document.getElementById('modal-calendar').classList.remove('hidden');
+        }
+
+        function cerrarModalCalendar() {
+            document.getElementById('modal-calendar').classList.add('hidden');
+        }
+
+        function crearEventoCalendar(event) {
+            event.preventDefault();
+            const btn = document.getElementById('btn-submit-calendar');
+            btn.disabled = true;
+            btn.innerText = "⏳ Creando...";
+
+            const params = new URLSearchParams({
+                accion: "agendar_evento",
+                titulo: document.getElementById('cal-titulo').value,
+                inicio: document.getElementById('cal-inicio').value,
+                fin: document.getElementById('cal-fin').value,
+                descripcion: document.getElementById('cal-descripcion').value
+            });
+
+            fetch(`${API_URL}?${params.toString()}`)
+            .then(res => res.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerText = "🗓️ Crear Cita";
+                if(data.status === "success") {
+                    alert("📅 ¡Cita añadida con éxito a tu Google Calendar principal!");
+                    cerrarModalCalendar();
+                } else { alert("❌ Error: " + data.error); }
+            })
+            .catch(err => {
+                console.error(err);
+                btn.disabled = false;
+                btn.innerText = "🗓️ Crear Cita";
+                alert("❌ Ocurrió un error al procesar el evento.");
             });
         }
     </script>
