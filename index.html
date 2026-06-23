@@ -195,27 +195,36 @@
 
     <!-- MODAL 2: AGENDAR EN GOOGLE CALENDAR -->
     <div id="modal-calendar" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
                 <h3 class="text-xl font-bold text-gray-800">📅 Agendar Cita de Calendar</h3>
                 <button onclick="cerrarModalCalendar()" class="text-gray-400 hover:text-gray-600 font-bold text-2xl">×</button>
             </div>
             <form id="form-calendar" onsubmit="crearEventoCalendar(event)">
-                <div class="mb-4">
+                <div class="mb-3">
                     <label class="block text-gray-700 text-sm font-semibold mb-1">Título del Evento *</label>
                     <input type="text" id="cal-titulo" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                 </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-semibold mb-1">Inicio Cita *</label>
-                    <input type="datetime-local" id="cal-inicio" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                <div class="grid grid-cols-2 gap-2 mb-3">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Inicio Cita *</label>
+                        <input type="datetime-local" id="cal-inicio" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Fin Cita *</label>
+                        <input type="datetime-local" id="cal-fin" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-semibold mb-1">Fin Cita *</label>
-                    <input type="datetime-local" id="cal-fin" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                
+                <!-- NUEVO CAMPO: COMENTARIOS DE LA CITA ACTUAL -->
+                <div class="mb-3">
+                    <label class="block text-blue-700 text-sm font-bold mb-1">✍️ Notas o Comentarios Adicionales de esta Cita</label>
+                    <input type="text" id="cal-comentario-cita" oninput="actualizarDetalleDinamico()" placeholder="Ej. Llevar bomba grande, cliente pagará en efectivo..." class="w-full p-2 border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-blue-50">
                 </div>
+
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-semibold mb-1">Detalles / Notas (Aparecerá en el Calendar)</label>
-                    <textarea id="cal-descripcion" rows="5" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 text-xs text-gray-600 font-mono" readonly></textarea>
+                    <label class="block text-gray-500 text-xs font-semibold mb-1">Vista previa del Detalle Final (Se enviará a Calendar):</label>
+                    <textarea id="cal-descripcion" rows="6" class="w-full p-2 border rounded-lg bg-gray-100 text-xs text-gray-600 font-mono outline-none cursor-not-allowed" readonly></textarea>
                 </div>
                 <div class="flex justify-end gap-2 border-t pt-3">
                     <button type="button" onclick="cerrarModalCalendar()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-bold hover:bg-gray-400 transition">Cancelar</button>
@@ -228,6 +237,7 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbwRAZUcR0xg7na4FQN3257DRQKUmBvh9w_dlGQ_DFPY4bpPEVfW8-n6SbhiLnrnpRMw/exec";
         let datosTemporales = []; 
+        let clienteSeleccionadoParaCita = null;
 
         document.getElementById('fechaRegistro').valueAsDate = new Date();
 
@@ -410,28 +420,25 @@
         }
 
         // ==========================================
-        // CALENDARIO COMPLEMENTARIO CON COMENTARIOS
+        // CALENDARIO COMPLEMENTARIO ACTUALIZADO
         // ==========================================
         function abrirModalCalendar(consecutivo) {
             const cliente = datosTemporales.find(item => item.consecutivo == consecutivo);
             if (!cliente) return;
 
+            clienteSeleccionadoParaCita = cliente; // Guardamos la referencia global
+            document.getElementById('cal-comentario-cita').value = ""; // Limpiar campo nuevo
+
             document.getElementById('cal-titulo').value = "Fumigación: " + (cliente.nombre || '') + " (" + (cliente.sucursal || 'Principal') + ")";
             
-            // Aquí sumamos tus comentarios del cliente directamente al detalle de la cita de calendar
-            document.getElementById('cal-descripcion').value = 
-                "Cliente: " + (cliente.nombre || '') + "\n" +
-                "Teléfono: " + (cliente.telefono || 'No indicado') + "\n" +
-                "Dirección: " + (cliente.direccion || 'No indicada') + "\n" +
-                "GPS: " + (cliente.gps || '') + "\n" +
-                "-----------------------------------------\n" +
-                "OBSERVACIONES: " + (cliente.comentarios || 'Ninguna registrada.');
+            // Renderizar la vista previa inicial
+            actualizarDetalleDinamico();
 
             const ahora = new Date();
             ahora.setMinutes(0);
             const formatoInicio = ahora.toISOString().slice(0, 16);
             ahora.setHours(ahora.getHours() + 1);
-            const formatoFin = bandwidth= ahora.toISOString().slice(0, 16);
+            const formatoFin = ahora.toISOString().slice(0, 16);
 
             document.getElementById('cal-inicio').value = formatoInicio;
             document.getElementById('cal-fin').value = formatoFin;
@@ -439,8 +446,26 @@
             document.getElementById('modal-calendar').classList.remove('hidden');
         }
 
+        // Esta función actualiza dinámicamente el bloque de detalles combinando los datos fijos del cliente y lo que escribas en el campo azul
+        function actualizarDetalleDinamico() {
+            if (!clienteSeleccionadoParaCita) return;
+            
+            const comentarioDeEstaCita = document.getElementById('cal-comentario-cita').value;
+
+            document.getElementById('cal-descripcion').value = 
+                "Cliente: " + (clienteSeleccionadoParaCita.nombre || '') + "\n" +
+                "Teléfono: " + (clienteSeleccionadoParaCita.telefono || 'No indicado') + "\n" +
+                "Dirección: " + (clienteSeleccionadoParaCita.direccion || 'No indicada') + "\n" +
+                "GPS: " + (clienteSeleccionadoParaCita.gps || '') + "\n" +
+                "-----------------------------------------\n" +
+                "COMENTARIO DE ESTA CITA: " + (comentarioDeEstaCita || 'Ninguno') + "\n" +
+                "-----------------------------------------\n" +
+                "OBSERVACIONES FIJAS: " + (clienteSeleccionadoParaCita.comentarios || 'Ninguna registrada.');
+        }
+
         function cerrarModalCalendar() {
             document.getElementById('modal-calendar').classList.add('hidden');
+            clienteSeleccionadoParaCita = null;
         }
 
         function crearEventoCalendar(event) {
