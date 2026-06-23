@@ -188,18 +188,32 @@
                     <label class="block text-gray-700 text-sm font-semibold mb-1">Título del Evento *</label>
                     <input type="text" id="cal-titulo" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                 </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-semibold mb-1">Inicio Cita *</label>
-                    <input type="datetime-local" id="cal-inicio" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                <div class="grid grid-cols-2 gap-2 mb-4">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Inicio Cita *</label>
+                        <input type="datetime-local" id="cal-inicio" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-semibold mb-1">Fin Cita *</label>
+                        <input type="datetime-local" id="cal-fin" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                    </div>
                 </div>
+
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-semibold mb-1">Fin Cita *</label>
-                    <input type="datetime-local" id="cal-fin" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    <label class="block text-gray-700 text-sm font-semibold mb-1">Monto a Facturar</label>
+                    <input type="number" id="cal-monto" placeholder="Ej: 50000" oninput="actualizarNotasCalendar()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                 </div>
+
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-semibold mb-1">Detalles / Notas</label>
-                    <textarea id="cal-descripcion" rows="3" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 text-xs text-gray-600" readonly></textarea>
+                    <label class="block text-gray-700 text-sm font-semibold mb-1">Comentario / Indicaciones</label>
+                    <textarea id="cal-comentario" rows="2" placeholder="Notas internas para la fumigación..." oninput="actualizarNotasCalendar()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"></textarea>
                 </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-semibold mb-1">Detalles / Notas (Se enviará a Calendar)</label>
+                    <textarea id="cal-descripcion" rows="4" class="w-full p-2 border rounded-lg bg-gray-50 text-xs text-gray-600 outline-none" readonly></textarea>
+                </div>
+
                 <div class="flex justify-end gap-2 border-t pt-3">
                     <button type="button" onclick="cerrarModalCalendar()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-bold hover:bg-gray-400 transition">Cancelar</button>
                     <button type="submit" id="btn-submit-calendar" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 transition shadow">🗓️ Crear Cita</button>
@@ -211,6 +225,7 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbwRAZUcR0xg7na4FQN3257DRQKUmBvh9w_dlGQ_DFPY4bpPEVfW8-n6SbhiLnrnpRMw/exec";
         let datosTemporales = []; 
+        let clienteSeleccionadoActual = null; // Guarda los datos básicos del cliente abierto en el calendario
 
         document.getElementById('fechaRegistro').valueAsDate = new Date();
 
@@ -235,7 +250,7 @@
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => { inputGps.value = position.coords.latitude + ", " + position.coords.longitude; },
-                    (error) => { alert("Verifica los permisos de ubicación."); inputGps.value = ""; }
+                    (error) => { alert("Verifica los permisos de ubicación en tu navegador."); inputGps.value = ""; }
                 );
             } else { alert("Geolocalización no soportada."); }
         }
@@ -295,7 +310,7 @@
                     if(fechaMostrada && typeof fechaMostrada === 'string' && fechaMostrada.includes('T')) {
                         fechaMostrada = new Date(item.fechaRegistro).toLocaleDateString('es-ES');
                     }
-                    let gpsHtml = item.gps ? `<br><a href="http://googleusercontent.com/maps.google.com/?q=${encodeURIComponent(item.gps)}" target="_blank" class="text-blue-500 underline text-xs">📍 Ver Mapa</a>` : '';
+                    let gpsHtml = item.gps ? `<br><a href="https://maps.google.com/?q=${encodeURIComponent(item.gps)}" target="_blank" class="text-blue-500 underline text-xs font-semibold">📍 Ver Mapa</a>` : '';
 
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-blue-50 transition border-b border-gray-100";
@@ -389,25 +404,39 @@
         }
 
         // ==========================================
-        // CALENDARIO COMPLEMENTARIO
+        // MANEJO DE CALENDARIO Y AUTO-RELLENO
         // ==========================================
         function abrirModalCalendar(consecutivo) {
             const cliente = datosTemporales.find(item => item.consecutivo == consecutivo);
             if (!cliente) return;
 
+            // Guardamos la referencia global del cliente activo para armar las notas en vivo
+            clienteSeleccionadoActual = cliente;
+
             document.getElementById('cal-titulo').value = "Fumigación: " + (cliente.nombre || '') + " (" + (cliente.sucursal || 'Principal') + ")";
             
-            document.getElementById('cal-descripcion').value = 
-                "Cliente: " + (cliente.nombre || '') + "\n" +
-                "Teléfono: " + (cliente.telefono || 'No indicado') + "\n" +
-                "Dirección: " + (cliente.direccion || 'No indicada') + "\n" +
-                "GPS: " + (cliente.gps || '');
+            // Limpiar campos dinámicos nuevos al abrir de cero
+            document.getElementById('cal-monto').value = "";
+            document.getElementById('cal-comentario').value = "";
 
+            // Llamar a estructurar el campo Notas/Detalles iniciales
+            actualizarNotasCalendar();
+
+            // Configurar horas locales sugeridas (Evita desfases UTC)
             const ahora = new Date();
             ahora.setMinutes(0);
-            const formatoInicio = ahora.toISOString().slice(0, 16);
+            
+            const año = ahora.getFullYear();
+            const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+            const dia = String(ahora.getDate()).padStart(2, '0');
+            const hora = String(ahora.getHours()).padStart(2, '0');
+            const minutos = String(ahora.getMinutes()).padStart(2, '0');
+            
+            const formatoInicio = `${año}-${mes}-${dia}T${hora}:${minutos}`;
+            
             ahora.setHours(ahora.getHours() + 1);
-            const formatoFin = ahora.toISOString().slice(0, 16);
+            const horaFin = String(ahora.getHours()).padStart(2, '0');
+            const formatoFin = `${año}-${mes}-${mes === String(ahora.getMonth()+1).padStart(2, '0') ? dia : String(ahora.getDate()).padStart(2, '0')}T${horaFin}:${minutos}`;
 
             document.getElementById('cal-inicio').value = formatoInicio;
             document.getElementById('cal-fin').value = formatoFin;
@@ -415,8 +444,38 @@
             document.getElementById('modal-calendar').classList.remove('hidden');
         }
 
+        // FUNCIÓN CLAVE NUEVA: Junta todos los datos en el cuadro "Detalles / Notas" en tiempo real
+        function actualizarNotasCalendar() {
+            if (!clienteSeleccionadoActual) return;
+
+            const monto = document.getElementById('cal-monto').value;
+            const comentario = document.getElementById('cal-comentario').value;
+
+            let textoNotas = 
+                `Cliente: ${clienteSeleccionadoActual.nombre || ''}\n` +
+                `Teléfono: ${clienteSeleccionadoActual.telefono || 'No indicado'}\n` +
+                `Dirección: ${clienteSeleccionadoActual.direccion || 'No indicada'}\n` +
+                `GPS: ${clienteSeleccionadoActual.gps || 'No indicado'}\n`;
+
+            // Si el usuario digita un monto, lo concatenamos
+            if (monto) {
+                textoNotas += `Monto a Facturar: ₡${monto}\n`;
+            } else {
+                textoNotas += `Monto a Facturar: No especificado\n`;
+            }
+
+            // Si escribe un comentario, lo concatenamos al final
+            if (comentario.trim() !== "") {
+                textoNotas += `Comentarios: ${comentario}`;
+            }
+
+            // Inyectamos el resultado concatenado en la caja que se lee para Google Calendar
+            document.getElementById('cal-descripcion').value = textoNotas;
+        }
+
         function cerrarModalCalendar() {
             document.getElementById('modal-calendar').classList.add('hidden');
+            clienteSeleccionadoActual = null;
         }
 
         function crearEventoCalendar(event) {
@@ -439,7 +498,7 @@
                 btn.disabled = false;
                 btn.innerText = "🗓️ Crear Cita";
                 if(data.status === "success") {
-                    alert("📅 ¡Cita añadida con éxito a tu Google Calendar principal!");
+                    alert("📅 ¡Cita añadida con éxito a tu Google Calendar principal con todos los detalles incorporados!");
                     cerrarModalCalendar();
                 } else { alert("❌ Error: " + data.error); }
             })
