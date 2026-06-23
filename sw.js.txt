@@ -1,0 +1,42 @@
+const CACHE_NAME = 'tecnoplagas-v1';
+const assets = [
+  './index.html',
+  './manifest.json'
+];
+
+// Evento de instalación: guarda la estructura base de la app
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(assets);
+    }).then(() => self.skipWaiting())
+  );
+});
+
+// Evento de activación: limpia caches antiguos si actualizas la app
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys => {
+      return Promise.all(
+        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+      );
+    }).then(() => self.clients.claim())
+  );
+});
+
+// Evento fetch: intercepta peticiones locales para trabajar offline/rápido
+self.addEventListener('fetch', event => {
+  // Omitir peticiones externas a Google Apps Script para que no rompa la sincronización viva
+  if (event.request.url.includes('script.google.com')) {
+    return;
+  }
+  
+  event.respondWith(
+    caches.match(event.request).then(cachedResponse => {
+      return cachedResponse || fetch(event.request).catch(() => {
+        // Fallback en caso de que esté totalmente offline sin internet
+        return caches.match('./index.html');
+      });
+    })
+  );
+});
