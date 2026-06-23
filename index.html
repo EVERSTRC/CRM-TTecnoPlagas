@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TecnoPlagas Pro v24.4</title>
+<title>TecnoPlagas Pro v24.5</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
 :root { --primary: #1e272e; --accent: #05c46b; --purple: #3c40c6; }
@@ -21,8 +21,8 @@ select[multiple] { height: 160px !important; font-size: 0.75rem; border: 2px sol
 </head>
 <body>
 
-<div class="bg-white sticky-top shadow-sm p-2 mb-3">
-<ul class="nav nav-pills justify-content-center">
+<div class="bg-white sticky-top shadow-sm p-2 mb-3" style="overflow-x: auto; white-space: nowrap;">
+<ul class="nav nav-pills justify-content-center flex-nowrap">
 <li class="nav-item"><a class="nav-link active" onclick="showTab('v-clientes', this)">CLIENTES</a></li>
 <li class="nav-item"><a class="nav-link" onclick="showTab('v-cebaderos', this)">CEBADEROS</a></li>
 <li class="nav-item"><a class="nav-link" onclick="showTab('v-visitas', this)">VISITAS</a></li>
@@ -211,7 +211,7 @@ select[multiple] { height: 160px !important; font-size: 0.75rem; border: 2px sol
 </div>
 </div>
 
-<!-- NUEVA VISTA: EXCLUSIVA DE GOOGLE CALENDAR -->
+<!-- VISTA: EXCLUSIVA DE GOOGLE CALENDAR -->
 <div id="v-calendar" class="tab-content d-none">
 <div class="card">
 <h6 class="section-header purple text-primary">📅 AGENDAR EN GOOGLE CALENDAR</h6>
@@ -242,7 +242,7 @@ select[multiple] { height: 160px !important; font-size: 0.75rem; border: 2px sol
         <option value="180">3 Horas</option>
     </select>
 </div>
-<div class="col-md-6">
+<div class="col-md-4">
     <label class="form-label">Asunto / Motivo</label>
     <select id="cal_asu" class="form-select">
         <option>Inspección Inicial</option>
@@ -252,12 +252,23 @@ select[multiple] { height: 160px !important; font-size: 0.75rem; border: 2px sol
         <option>Tratamiento de Emergencia</option>
     </select>
 </div>
-<div class="col-md-6">
+<div class="col-md-4">
     <label class="form-label">Técnico Asignado</label>
     <input type="text" id="cal_tec" class="form-control" placeholder="Nombre del técnico">
 </div>
+<!-- NUEVO CAMPO SOLICITADO: MONTO FACTURADO -->
+<div class="col-md-4">
+    <label class="form-label text-purple" style="color: var(--purple);">Monto Facturado (₡)</label>
+    <input type="number" id="cal_mon" class="form-control" placeholder="Ej: 35000" value="0">
+</div>
+
+<!-- CAMPOS OCULTOS/INVISIBLES PARA CAPTURAR TELÉFONO, DIRECCIÓN Y GPS DINÁMICAMENTE -->
+<input type="hidden" id="cal_tel">
+<input type="hidden" id="cal_dir">
+<input type="hidden" id="cal_gps">
+
 <div class="col-12">
-    <label class="form-label">Notas Adicionales (Irán a la descripción del evento)</label>
+    <label class="form-label">Notas Adicionales</label>
     <textarea id="cal_com" class="form-control" rows="3" placeholder="Información útil para el calendario..."></textarea>
 </div>
 </div>
@@ -293,6 +304,7 @@ function cargarClientes() {
                     option.dataset.telefono = c.tel || "";
                     option.dataset.direccion = c.loc || "";
                     option.dataset.sucursal = c.suc || "";
+                    option.dataset.gps = c.gps || "";
                     select.appendChild(option);
                 });
             });
@@ -321,8 +333,15 @@ function autoFillCalendar() {
     const opt = sel.options[sel.selectedIndex];
     if(opt && opt.value !== "") {
         document.getElementById("cal_suc").value = opt.dataset.sucursal || "";
+        // Auto-llenado de los campos requeridos para la descripción de la cita
+        document.getElementById("cal_tel").value = opt.dataset.telefono || "No registrado";
+        document.getElementById("cal_dir").value = opt.dataset.direccion || "No registrada";
+        document.getElementById("cal_gps").value = opt.dataset.gps || "No registrado";
     } else {
         document.getElementById("cal_suc").value = "";
+        document.getElementById("cal_tel").value = "";
+        document.getElementById("cal_dir").value = "";
+        document.getElementById("cal_gps").value = "";
     }
 }
 
@@ -394,7 +413,12 @@ function guardarGeneral(pestana, prefijo) {
     })
     .then(() => {
         alert("¡Proceso exitoso! Datos enviados correctamente.");
-        inputs.forEach(i => { if(i.id !== `${prefijo}_con`) i.value = ""; });
+        inputs.forEach(i => { 
+            // Resetear todos excepto el consecutivo o los inputs ocultos de geolocalización de calendar preliminar
+            if(i.id !== `${prefijo}_con` && !i.id.includes('tel') && !i.id.includes('dir') && !i.id.includes('gps')) {
+                i.value = (i.id === 'cal_mon') ? "0" : ""; 
+            }
+        });
         if(pestana === "Clientes") cargarClientes();
     })
     .catch(err => alert("Error al procesar la solicitud: " + err));
