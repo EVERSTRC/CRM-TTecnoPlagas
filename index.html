@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Control de Fumigaciones y Agenda</title>
+    <!-- Vinculación del Manifiesto para PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1d4ed8">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -22,6 +23,7 @@
 
     <main class="flex-grow container mx-auto p-4 max-w-6xl mt-6">
         
+        <!-- PESTAÑA 1: FORMULARIO CLIENTE -->
         <div id="vista-registro" class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
             <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">Registrar Servicio / Cliente</h2>
             <form id="form-registro" onsubmit="guardarDatos(event)">
@@ -90,6 +92,7 @@
             <div id="status-registro" class="mt-4 hidden text-center font-semibold p-3 rounded-lg"></div>
         </div>
 
+        <!-- PESTAÑA 2: CONSULTA -->
         <div id="vista-consulta" class="bg-white p-6 rounded-xl shadow-md border border-gray-200 hidden">
             <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">Consultar Base de Datos</h2>
             <div class="flex flex-col sm:flex-row mb-6 gap-2">
@@ -120,6 +123,7 @@
         </div>
     </main>
 
+    <!-- MODAL 1: EDITAR REGISTRO -->
     <div id="modal-editar" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-xl shadow-2xl max-w-3xl w-full p-6 overflow-y-auto max-h-[90vh]">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
@@ -192,6 +196,7 @@
         </div>
     </div>
 
+    <!-- MODAL 2: AGENDAR EN GOOGLE CALENDAR -->
     <div id="modal-calendar" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden p-4">
         <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
@@ -214,6 +219,12 @@
                     </div>
                 </div>
                 
+                <!-- CAMPO RESTAURADO: MONTO A FACTURAR -->
+                <div class="mb-3">
+                    <label class="block text-gray-700 text-sm font-semibold mb-1">Monto a Facturar</label>
+                    <input type="text" id="cal-monto" oninput="actualizarDetalleDinamico()" placeholder="Ej. $50, 45000..." class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
                 <div class="mb-3">
                     <label class="block text-blue-700 text-sm font-bold mb-1">✍️ Notas o Comentarios Adicionales de esta Cita</label>
                     <input type="text" id="cal-comentario-cita" oninput="actualizarDetalleDinamico()" placeholder="Ej. Recordar cobrar, usar traje especial..." class="w-full p-2 border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-blue-50">
@@ -232,7 +243,6 @@
     </div>
 
     <script>
-        // URL de Google Script actualizada con tu último ID
         const API_URL = "https://script.google.com/macros/s/AKfycbx76P6eClGqUUit7fiq-frzOPaJQ9m1pl66fXaKmqsb124XFDobH4GH-h9VvexWnUNG/exec";
         let datosTemporales = []; 
         let clienteSeleccionadoParaCita = null;
@@ -322,7 +332,6 @@
                     if(fechaMostrada && typeof fechaMostrada === 'string' && fechaMostrada.includes('T')) {
                         fechaMostrada = new Date(item.fechaRegistro).toLocaleDateString('es-ES');
                     }
-                    // Corrección del enlace dinámico a Google Maps
                     let gpsHtml = item.gps ? `<br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.gps)}" target="_blank" class="text-blue-500 underline text-xs">📍 Ver Mapa</a>` : '';
 
                     const tr = document.createElement('tr');
@@ -425,6 +434,7 @@
             if (!cliente) return;
 
             clienteSeleccionadoParaCita = cliente; 
+            document.getElementById('cal-monto').value = ""; 
             document.getElementById('cal-comentario-cita').value = ""; 
             document.getElementById('cal-titulo').value = "Fumigación: " + (cliente.nombre || '') + " (" + (cliente.sucursal || 'Principal') + ")";
             
@@ -445,6 +455,7 @@
         function actualizarDetalleDinamico() {
             if (!clienteSeleccionadoParaCita) return;
             
+            const montoCita = document.getElementById('cal-monto').value;
             const comentarioDeEstaCita = document.getElementById('cal-comentario-cita').value;
 
             document.getElementById('cal-descripcion').value = 
@@ -453,6 +464,7 @@
                 "Dirección: " + (clienteSeleccionadoParaCita.direccion || 'No indicada') + "\n" +
                 "GPS: " + (clienteSeleccionadoParaCita.gps || '') + "\n" +
                 "-----------------------------------------\n" +
+                "MONTO A FACTURAR: " + (montoCita || 'No definido') + "\n" +
                 "COMENTARIO DE ESTA CITA: " + (comentarioDeEstaCita || 'Ninguno') + "\n" +
                 "-----------------------------------------\n" +
                 "OBSERVACIONES FIJAS: " + (clienteSeleccionadoParaCita.comentarios || 'Ninguna registrada.');
@@ -497,6 +509,7 @@
         }
     </script>
 
+    <!-- Script de activación automático del Service Worker de la PWA -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
