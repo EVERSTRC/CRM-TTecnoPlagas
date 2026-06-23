@@ -8,7 +8,6 @@
     <meta name="theme-color" content="#1d4ed8">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Estilos específicos para que el PDF se imprima impecable y sin menús */
         @media print {
             body * { visibility: hidden; }
             #area-impresion-pdf, #area-impresion-pdf * { visibility: visible; }
@@ -242,7 +241,6 @@
         <div class="mt-6 border-t-2 border-dashed pt-4 text-center text-xs">
             <p><strong>Método de Pago:</strong> <span id="pdf-metodo-pago"></span></p>
             <p class="mt-3 font-bold">¡Gracias por confiar en nuestra gestión de control de plagas!</p>
-            <p class="text-gray-400 mt-1">Este documento es un comprobante válido de servicio.</p>
         </div>
     </div>
 
@@ -339,20 +337,17 @@
                         <input type="datetime-local" id="cal-fin" required class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                 </div>
-                
                 <div class="mb-3">
                     <label class="block text-gray-700 text-sm font-semibold mb-1">Monto a Facturar</label>
                     <input type="text" id="cal-monto" oninput="actualizarDetalleDinamico()" placeholder="Ej. $50, 45000..." class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                 </div>
-
                 <div class="mb-3">
                     <label class="block text-blue-700 text-sm font-bold mb-1">✍️ Notas o Comentarios Adicionales de esta Cita</label>
-                    <input type="text" id="cal-comentario-cita" oninput="actualizarDetalleDinamico()" placeholder="Ej. Recordar cobrar, usar traje especial..." class="w-full p-2 border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-blue-50">
+                    <input type="text" id="cal-comentario-cita" oninput="actualizarDetalleDinamico()" class="w-full p-2 border border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-blue-50">
                 </div>
-
                 <div class="mb-4">
                     <label class="block text-gray-500 text-xs font-semibold mb-1">Vista previa del Detalle Final:</label>
-                    <textarea id="cal-descripcion" rows="6" class="w-full p-2 border rounded-lg bg-gray-100 text-xs text-gray-600 font-mono outline-none cursor-not-allowed" readonly></textarea>
+                    <textarea id="cal-descripcion" rows="5" class="w-full p-2 border rounded-lg bg-gray-100 text-xs text-gray-600 font-mono outline-none cursor-not-allowed" readonly></textarea>
                 </div>
                 <div class="flex justify-end gap-2 border-t pt-3">
                     <button type="button" onclick="cerrarModalCalendar()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-bold hover:bg-gray-400 transition">Cancelar</button>
@@ -363,7 +358,8 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxHgG0bJ7_dxVuyD0IRidiH7fSP2gqLLeTMMS81ewWBcjxLo5ebN6z6YoUf5QGug58b/exec"; 
+        // URL ACTUALIZADA CON TU CLAVE CORRECTA Y TERMINACIÓN /EXEC
+        const API_URL = "https://script.google.com/macros/s/AKfycbwkgmrOl4E8MI4x5wB1qAoG5eMJN7U-_a7naTbQ6Z7AUNxnDaWM1BND8P-dfrUhv81X/exec"; 
         let datosTemporales = []; 
         let clienteSeleccionadoParaCita = null;
 
@@ -374,7 +370,7 @@
             fetch(API_URL)
             .then(res => res.json())
             .then(data => { datosTemporales = data; })
-            .catch(err => console.warn("Aún no hay datos guardados o falta configurar la URL."));
+            .catch(err => console.warn("Esperando base de datos activa."));
         });
 
         function cambiarPestana(pestana) {
@@ -405,16 +401,16 @@
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => { inputGps.value = position.coords.latitude + ", " + position.coords.longitude; },
-                    (error) => { alert("Verifica los permisos de ubicación."); inputGps.value = ""; }
+                    (error) => { alert("Permisos denegados."); inputGps.value = ""; }
                 );
-            } else { alert("Geolocalización no soportada."); }
+            } else { alert("GPS no soportado."); }
         }
 
         function guardarDatos(event) {
             event.preventDefault();
             const status = document.getElementById('status-registro');
             status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-blue-100 text-blue-800 block";
-            status.innerText = "⏳ Guardando registro en la hoja de cálculo...";
+            status.innerText = "⏳ Guardando registro...";
 
             const dataObj = {
                 accion: "registrar",
@@ -437,29 +433,28 @@
             })
             .then(() => {
                 status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-green-100 text-green-800 block";
-                status.innerText = "✅ ¡Guardado enviado con éxito! Recargando datos...";
+                status.innerText = "✅ Sincronizado correctamente.";
                 document.getElementById('form-registro').reset();
                 document.getElementById('fechaRegistro').valueAsDate = new Date();
-                
                 fetch(API_URL).then(res => res.json()).then(data => { datosTemporales = data; });
             })
-            .catch(err => {
+            .catch(() => {
                 status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-red-100 text-red-800 block";
-                status.innerText = "❌ Error de red local.";
+                status.innerText = "❌ Error de red.";
             });
         }
 
         function buscarDatos() {
             const query = document.getElementById('busqueda').value;
             const tbody = document.getElementById('tabla-resultados');
-            tbody.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-blue-500 font-bold">⏳ Descargando base de datos...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-blue-500 font-bold">⏳ Cargando base de datos...</td></tr>';
 
             fetch(`${API_URL}?q=${encodeURIComponent(query)}`)
             .then(res => res.json())
             .then(data => {
                 tbody.innerHTML = "";
                 if(data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-gray-500">No se encontraron registros.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-gray-500">Sin coincidencias.</td></tr>';
                     return;
                 }
                 
@@ -472,28 +467,27 @@
 
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-blue-50 transition border-b border-gray-100";
-                    
                     tr.innerHTML = `
                         <td class="p-2 font-mono text-xs text-gray-500">${item.consecutivo || ''}</td>
                         <td class="p-2 font-bold text-gray-800">${item.nombre || ''}<br><span class="text-xs font-normal text-gray-500">Reg: ${fechaMostrada}</span></td>
                         <td class="p-2">${item.cedula || ''}</td>
                         <td class="p-2"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">${item.sucursal || '-'}</span></td>
                         <td class="p-2 text-sm">${item.telefono || ''}<br><span class="text-xs text-gray-400">${item.email || ''}</span></td>
-                        <td class="p-2 text-xs max-w-[180px] truncate" title="${item.direccion || ''}">${item.direccion || ''}${gpsHtml}</td>
-                        <td class="p-2 text-xs text-gray-500 italic max-w-[150px] truncate" title="${item.comentarios || ''}">${item.comentarios || '-'}</td>
-                        <td class="p-2"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs font-bold">${item.frecuencia || 'No def.'}</span></td>
+                        <td class="p-2 text-xs max-w-[180px] truncate">${item.direccion || ''}${gpsHtml}</td>
+                        <td class="p-2 text-xs text-gray-500 italic max-w-[150px] truncate">${item.comentarios || '-'}</td>
+                        <td class="p-2"><span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs font-bold">${item.frecuencia || 'Regular'}</span></td>
                         <td class="p-2">
                             <div class="flex flex-col gap-1 items-center">
-                                <button onclick="abrirModalEditar(${item.consecutivo})" class="w-full bg-blue-600 text-white px-2 py-0.5 rounded font-semibold text-xs hover:bg-blue-700 transition shadow">✏️ Editar</button>
-                                <button onclick="abrirModalCalendar(${item.consecutivo})" class="w-full bg-indigo-600 text-white px-2 py-0.5 rounded font-semibold text-xs hover:bg-indigo-700 transition shadow">📅 Agenda</button>
-                                <button onclick="asociarClienteAFactura(${item.consecutivo})" class="w-full bg-emerald-600 text-white px-2 py-0.5 rounded font-semibold text-xs hover:bg-emerald-700 transition shadow">🧾 Facturar</button>
+                                <button onclick="abrirModalEditar(${item.consecutivo})" class="w-full bg-blue-600 text-white px-2 py-0.5 rounded font-semibold text-xs hover:bg-blue-700 transition">✏️ Editar</button>
+                                <button onclick="abrirModalCalendar(${item.consecutivo})" class="w-full bg-indigo-600 text-white px-2 py-0.5 rounded font-semibold text-xs hover:bg-indigo-700 transition">📅 Agenda</button>
+                                <button onclick="asociarClienteAFactura(${item.consecutivo})" class="w-full bg-emerald-600 text-white px-2 py-0.5 rounded font-semibold text-xs hover:bg-emerald-700 transition">🧾 Facturar</button>
                             </div>
                         </td>
                     `;
                     tbody.appendChild(tr);
                 });
             })
-            .catch(err => {
+            .catch(() => {
                 tbody.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-red-500 font-semibold">❌ Error de conexión o permisos en Google Script.</td></tr>';
             });
         }
@@ -513,28 +507,17 @@
             document.getElementById('edit-gps').value = cliente.gps || '';
             document.getElementById('edit-comentarios').value = cliente.comentarios || '';
             
-            if(cliente.fechaRegistro) {
-                if(cliente.fechaRegistro.includes('T')) {
-                    document.getElementById('edit-fechaRegistro').value = cliente.fechaRegistro.split('T')[0];
-                } else if(cliente.fechaRegistro.includes('/')) {
-                    const parts = cliente.fechaRegistro.split('/');
-                    if(parts[2] && parts[2].length === 4) {
-                        document.getElementById('edit-fechaRegistro').value = parts[2] + "-" + parts[1].padStart(2,'0') + "-" + parts[0].padStart(2,'0');
-                    }
-                }
+            if(cliente.fechaRegistro && cliente.fechaRegistro.includes('T')) {
+                document.getElementById('edit-fechaRegistro').value = cliente.fechaRegistro.split('T')[0];
             }
             document.getElementById('edit-frecuencia').value = cliente.frecuencia || '';
-
             document.getElementById('modal-editar').classList.remove('hidden');
         }
 
-        function cerrarModal() {
-            document.getElementById('modal-editar').classList.add('hidden');
-        }
+        function cerrarModal() { document.getElementById('modal-editar').classList.add('hidden'); }
 
         function actualizarDatos(event) {
             event.preventDefault();
-
             const dataObj = {
                 accion: "editar",
                 consecutivo: document.getElementById('edit-consecutivo').value,
@@ -550,19 +533,11 @@
                 comentarios: document.getElementById('edit-comentarios').value
             };
 
-            fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(dataObj)
-            })
+            fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(dataObj) })
             .then(() => {
-                alert("✅ ¡Solicitud de edición enviada con éxito! Comprobando cambios...");
+                alert("✅ Registro modificado.");
                 cerrarModal();
                 fetch(API_URL).then(res => res.json()).then(data => { datosTemporales = data; buscarDatos(); });
-            })
-            .catch(err => {
-                console.error(err);
-                alert("❌ Ocurrió un fallo en la conexión de red externa.");
             });
         }
 
@@ -573,50 +548,35 @@
             clienteSeleccionadoParaCita = cliente; 
             document.getElementById('cal-monto').value = ""; 
             document.getElementById('cal-comentario-cita').value = ""; 
-            document.getElementById('cal-titulo').value = "Fumigación: " + (cliente.nombre || '') + " (" + (cliente.sucursal || 'Principal') + ")";
+            document.getElementById('cal-titulo').value = "Fumigación: " + (cliente.nombre || '');
             
             actualizarDetalleDinamico();
 
             const ahora = new Date();
             ahora.setMinutes(0);
-            const formatoInicio = ahora.toISOString().slice(0, 16);
+            document.getElementById('cal-inicio').value = ahora.toISOString().slice(0, 16);
             ahora.setHours(ahora.getHours() + 1);
-            const formatoFin = ahora.toISOString().slice(0, 16);
-
-            document.getElementById('cal-inicio').value = formatoInicio;
-            document.getElementById('cal-fin').value = formatoFin;
+            document.getElementById('cal-fin').value = ahora.toISOString().slice(0, 16);
 
             document.getElementById('modal-calendar').classList.remove('hidden');
         }
 
         function actualizarDetalleDinamico() {
             if (!clienteSeleccionadoParaCita) return;
-            
-            const montoCita = document.getElementById('cal-monto').value;
-            const comentarioDeEstaCita = document.getElementById('cal-comentario-cita').value;
-
             document.getElementById('cal-descripcion').value = 
                 "Cliente: " + (clienteSeleccionadoParaCita.nombre || '') + "\n" +
-                "Teléfono: " + (clienteSeleccionadoParaCita.telefono || 'No indicado') + "\n" +
-                "Dirección: " + (clienteSeleccionadoParaCita.direccion || 'No indicada') + "\n" +
-                "GPS: " + (clienteSeleccionadoParaCita.gps || '') + "\n" +
-                "-----------------------------------------\n" +
-                "MONTO A FACTURAR: " + (montoCita || 'No definido') + "\n" +
-                "COMENTARIO DE ESTA CITA: " + (comentarioDeEstaCita || 'Ninguno') + "\n" +
-                "-----------------------------------------\n" +
-                "OBSERVACIONES FIJAS: " + (clienteSeleccionadoParaCita.comentarios || 'Ninguna registrada.');
+                "Teléfono: " + (clienteSeleccionadoParaCita.telefono || '') + "\n" +
+                "Dirección: " + (clienteSeleccionadoParaCita.direccion || '') + "\n" +
+                "Monto: " + (document.getElementById('cal-monto').value || 'S/D') + "\n" +
+                "Nota: " + (document.getElementById('cal-comentario-cita').value || 'Ninguna');
         }
 
-        function cerrarModalCalendar() {
-            document.getElementById('modal-calendar').classList.add('hidden');
-            clienteSeleccionadoParaCita = null;
-        }
+        function cerrarModalCalendar() { document.getElementById('modal-calendar').classList.add('hidden'); }
 
         function crearEventoCalendar(event) {
             event.preventDefault();
             const btn = document.getElementById('btn-submit-calendar');
             btn.disabled = true;
-            btn.innerText = "⏳ Creando...";
 
             const dataObj = {
                 accion: "agendar_evento",
@@ -626,116 +586,79 @@
                 description: document.getElementById('cal-descripcion').value
             };
 
-            fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(dataObj)
-            })
+            fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(dataObj) })
             .then(() => {
                 btn.disabled = false;
-                btn.innerText = "🗓️ Crear Cita";
-                alert("📅 ¡Cita procesada con éxito hacia Google Calendar!");
+                alert("📅 Cita enviada al Calendar.");
                 cerrarModalCalendar();
-            })
-            .catch(err => {
-                console.error(err);
-                btn.disabled = false;
-                btn.innerText = "🗓️ Crear Cita";
-                alert("❌ Ocurrió un error al procesar el evento.");
             });
         }
 
         function actualizarDesplegableClientes() {
             const selectNombre = document.getElementById('fact-nombre');
-            const valorActual = selectNombre.value; 
-            
             selectNombre.innerHTML = '<option value="">Seleccione un cliente...</option>';
-            
-            datosTemporales.forEach(cliente => {
-                if(cliente.nombre) {
-                    const option = document.createElement('option');
-                    option.value = cliente.nombre;
-                    option.textContent = cliente.nombre + (cliente.sucursal ? ` (${cliente.sucursal})` : '');
-                    selectNombre.appendChild(option);
+            datosTemporales.forEach(c => {
+                if(c.nombre) {
+                    const opt = document.createElement('option');
+                    opt.value = c.nombre;
+                    opt.textContent = c.nombre + (c.sucursal ? ` (${c.sucursal})` : '');
+                    selectNombre.appendChild(opt);
                 }
             });
-            
-            if (valorActual) selectNombre.value = valorActual;
         }
 
-        function autoRellenarDatosFactura(nombreSeleccionado) {
-            if (!nombreSeleccionado) {
-                document.getElementById('fact-cliente-id').value = '';
-                document.getElementById('fact-cedula').value = '';
-                return;
-            }
-            
-            const cliente = datosTemporales.find(item => item.nombre === nombreSeleccionado);
-            if (cliente) {
-                document.getElementById('fact-cliente-id').value = cliente.consecutivo || '';
-                document.getElementById('fact-cedula').value = cliente.cedula || '';
-                document.getElementById('fact-detalle').value = "Servicio de Fumigación y Control de Plagas. Frecuencia: " + (cliente.frecuencia || 'Regular');
+        function autoRellenarDatosFactura(val) {
+            const c = datosTemporales.find(item => item.nombre === val);
+            if (c) {
+                document.getElementById('fact-cliente-id').value = c.consecutivo || '';
+                document.getElementById('fact-cedula').value = c.cedula || '';
+                document.getElementById('fact-detalle').value = "Servicio de Fumigación Profesional";
             }
         }
 
         function asociarClienteAFactura(consecutivo) {
-            const cliente = datosTemporales.find(item => item.consecutivo == consecutivo);
-            if (!cliente) return;
-            
+            const c = datosTemporales.find(item => item.consecutivo == consecutivo);
+            if (!c) return;
             actualizarDesplegableClientes();
-            
-            document.getElementById('fact-nombre').value = cliente.nombre || '';
-            document.getElementById('fact-cliente-id').value = cliente.consecutivo;
-            document.getElementById('fact-cedula').value = cliente.cedula || '';
-            document.getElementById('fact-cantidad').value = "1";
-            document.getElementById('fact-detalle').value = "Servicio de Fumigación y Control de Plagas. Frecuencia: " + (cliente.frecuencia || 'Regular');
-            
+            document.getElementById('fact-nombre').value = c.nombre || '';
+            autoRellenarDatosFactura(c.nombre);
             cambiarPestana('facturacion');
         }
 
         function calcularTotalesFactura() {
-            const cantidad = parseFloat(document.getElementById('fact-cantidad').value) || 1;
-            const subtotalUnitario = parseFloat(document.getElementById('fact-subtotal').value) || 0;
-            const porcentajeImp = parseFloat(document.getElementById('fact-impuesto-porcentaje').value) || 0;
-            
-            const subtotalCalculado = subtotalUnitario * cantidad;
-            const impuestoMonto = subtotalCalculado * (porcentajeImp / 100);
-            const totalNeto = subtotalCalculado + impuestoMonto;
-            
-            document.getElementById('fact-total').value = totalNeto.toFixed(2);
+            const cant = parseFloat(document.getElementById('fact-cantidad').value) || 1;
+            const sub = parseFloat(document.getElementById('fact-subtotal').value) || 0;
+            const imp = parseFloat(document.getElementById('fact-impuesto-porcentaje').value) || 0;
+            const total = (sub * cant) * (1 + (imp / 100));
+            document.getElementById('fact-total').value = total.toFixed(2);
         }
 
         function guardarFactura(event) {
             event.preventDefault();
             const status = document.getElementById('status-factura');
             status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-blue-100 text-blue-800 block";
-            status.innerText = "⏳ Guardando en Sheets y generando comprobante...";
+            status.innerText = "⏳ Guardando factura...";
 
-            const cantidad = parseFloat(document.getElementById('fact-cantidad').value) || 1;
-            const subtotalUnitario = parseFloat(document.getElementById('fact-subtotal').value) || 0;
-            const subtotalCalculado = subtotalUnitario * cantidad;
-            const porcentajeImp = parseFloat(document.getElementById('fact-impuesto-porcentaje').value) || 0;
-            const impuestoMonto = subtotalCalculado * (porcentajeImp / 100);
+            const cant = parseFloat(document.getElementById('fact-cantidad').value) || 1;
+            const sub = parseFloat(document.getElementById('fact-subtotal').value) || 0;
+            const impPct = parseFloat(document.getElementById('fact-impuesto-porcentaje').value) || 0;
+            const calcSub = sub * cant;
+            const calcImp = calcSub * (impPct / 100);
             const totalFinal = document.getElementById('fact-total').value;
 
-            const timestampID = "FAC-" + Date.now().toString().slice(-6); 
-            document.getElementById('pdf-num-factura').innerText = timestampID;
-            
-            const fRaw = document.getElementById('fact-fecha').value.split('-');
-            document.getElementById('pdf-fecha').innerText = fRaw[2] + '/' + fRaw[1] + '/' + fRaw[0];
-            
+            const tID = "FAC-" + Date.now().toString().slice(-6);
+            document.getElementById('pdf-num-factura').innerText = tID;
+            document.getElementById('pdf-fecha').innerText = new Date(document.getElementById('fact-fecha').value).toLocaleDateString();
             document.getElementById('pdf-cliente-nombre').innerText = document.getElementById('fact-nombre').value;
             document.getElementById('pdf-cliente-cedula').innerText = document.getElementById('fact-cedula').value;
-            document.getElementById('pdf-cliente-id').innerText = document.getElementById('fact-cliente-id').value || 'S/C';
+            document.getElementById('pdf-cliente-id').innerText = document.getElementById('fact-cliente-id').value;
             document.getElementById('pdf-metodo-pago').innerText = document.getElementById('fact-metodo').value;
-            
-            document.getElementById('pdf-tabla-cant').innerText = cantidad;
+            document.getElementById('pdf-tabla-cant').innerText = cant;
             document.getElementById('pdf-tabla-detalle').innerText = document.getElementById('fact-detalle').value;
-            document.getElementById('pdf-tabla-precio').innerText = subtotalUnitario.toFixed(2);
-            document.getElementById('pdf-tabla-subtotal').innerText = subtotalCalculado.toFixed(2);
-            
-            document.getElementById('pdf-resumen-subtotal').innerText = subtotalCalculado.toFixed(2);
-            document.getElementById('pdf-resumen-impuesto').innerText = impuestoMonto.toFixed(2);
+            document.getElementById('pdf-tabla-precio').innerText = sub.toFixed(2);
+            document.getElementById('pdf-tabla-subtotal').innerText = calcSub.toFixed(2);
+            document.getElementById('pdf-resumen-subtotal').innerText = calcSub.toFixed(2);
+            document.getElementById('pdf-resumen-impuesto').innerText = calcImp.toFixed(2);
             document.getElementById('pdf-resumen-total').innerText = totalFinal;
 
             const dataObj = {
@@ -745,38 +668,24 @@
                 nombre: document.getElementById('fact-nombre').value,
                 cedula: document.getElementById('fact-cedula').value,
                 metodoPago: document.getElementById('fact-metodo').value,
-                cantidad: cantidad,
+                cantidad: cant,
                 detalle: document.getElementById('fact-detalle').value,
-                subtotal: subtotalUnitario.toFixed(2),
-                impuesto: impuestoMonto.toFixed(2),
+                subtotal: sub.toFixed(2),
+                impuesto: calcImp.toFixed(2),
                 total: totalFinal
             };
 
-            fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(dataObj)
-            })
+            fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(dataObj) })
             .then(() => {
                 status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-green-100 text-green-800 block";
-                status.innerText = "✅ Factura guardada en la Nube. Preparando impresión...";
-                
-                const areaPdf = document.getElementById('area-impresion-pdf');
-                areaPdf.classList.remove('hidden'); 
-                
+                status.innerText = "✅ Guardada. Abriendo panel de impresión...";
+                document.getElementById('area-impresion-pdf').classList.remove('hidden');
                 setTimeout(() => {
-                    window.print(); 
-                    areaPdf.classList.add('hidden'); 
-                    
+                    window.print();
+                    document.getElementById('area-impresion-pdf').classList.add('hidden');
                     document.getElementById('form-factura').reset();
                     document.getElementById('fact-fecha').valueAsDate = new Date();
-                    document.getElementById('fact-cantidad').value = "1";
-                    document.getElementById('fact-total').value = "0.00";
-                }, 500);
-            })
-            .catch(err => {
-                status.className = "mt-4 text-center font-semibold p-3 rounded-lg bg-red-100 text-red-800 block";
-                status.innerText = "❌ Fallo al sincronizar en la hoja de cálculo.";
+                }, 400);
             });
         }
     </script>
